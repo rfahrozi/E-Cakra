@@ -77,7 +77,11 @@ Semua service harus berstatus `running` atau `healthy`:
 
 ### 5. Akses Aplikasi
 
-Buka browser: **http://localhost**
+| Layanan | URL | Keterangan |
+|---------|-----|------------|
+| **Landing Page Publik** | [http://localhost](http://localhost) | Portal tanpa auth (untuk masyarakat umum) |
+| **Portal Internal** | [http://localhost/login](http://localhost/login) | Dashboard untuk Panitera/Operator/Admin |
+| **API Swagger Docs** | [http://localhost:8000/docs](http://localhost:8000/docs) | Dokumentasi API Backend FastAPI |
 
 ---
 
@@ -103,18 +107,26 @@ Buka browser: **http://localhost**
 | POST | `/hearings` | Buat sidang + Zoom meeting |
 | GET  | `/hearings` | Daftar semua sidang |
 | GET  | `/hearings/{id}` | Detail sidang |
+| DELETE| `/hearings/{id}`| Hapus sidang (Admin/Panitera) |
 | GET  | `/hearings/{id}/template` | Template distribusi |
 | GET  | `/hearings/{id}/participants` | Daftar peserta waiting room |
-| POST | `/participants/{id}/admit` | Admit peserta |
+| POST | `/participants/{id}/admit` | Admit peserta (Kirim perintah ke Zoom) |
 | POST | `/participants/{id}/hold` | Hold peserta |
-| POST | `/participants/{id}/reject` | Reject peserta |
+| POST | `/participants/{id}/reject`| Reject peserta (Kirim perintah ke Zoom) |
 | GET  | `/audit-logs` | Daftar audit log |
 | POST | `/webhooks/zoom` | Penerima webhook Zoom |
 | GET  | `/dashboard/summary` | Ringkasan dashboard |
+| GET  | `/public/today` | Daftar sidang terbuka untuk landing page |
+| GET  | `/users` | Manajemen pengguna (Admin) |
+| POST | `/users` | Tambah pengguna (Admin) |
+| PATCH| `/users/{id}` | Edit pengguna (Admin) |
+| DELETE| `/users/{id}` | Hapus pengguna (Admin) |
+| GET  | `/settings` | Pengaturan sistem (Admin) |
+| PATCH| `/settings/{key}` | Ubah pengaturan sistem (Admin) |
 | GET  | `/health` | Health check |
 
-**Swagger UI:** http://localhost/api/docs  
-**ReDoc:** http://localhost/api/redoc
+**Swagger UI:** http://localhost:8000/docs  
+**ReDoc:** http://localhost:8000/redoc
 
 ---
 
@@ -208,15 +220,19 @@ docker compose up -d --build
 ## Alur Kerja Sistem
 
 ```
-Panitera buat sidang → Zoom meeting otomatis terbuat
+[Masyarakat] → Buka Halaman Publik → Lihat Daftar Sidang Terbuka & Link YouTube
+       ↑
+[Panitera] Buat sidang → Zoom meeting otomatis terbuat + Terekam di Dashboard
        ↓
-Template distribusi siap salin (join link, format nama)
+Template distribusi siap salin (join link, format nama) → Dikirim ke Peserta
        ↓
-Peserta join via link → masuk waiting room Zoom
+[Peserta] Join via link Zoom → Masuk waiting room Zoom
        ↓
-Webhook Zoom → Backend terima → validasi nama otomatis
+Webhook Zoom → Backend terima → Validasi nama otomatis (Valid/Review/Invalid)
        ↓
-Operator lihat daftar → klik Admit / Hold / Reject
+[Operator] Pantau Dashboard/Waiting Room → klik Admit / Hold / Reject
+       ↓
+Backend kirim perintah balik ke Zoom API (Peserta masuk/ditolak)
        ↓
 Semua aksi tercatat di Audit Log
 ```
