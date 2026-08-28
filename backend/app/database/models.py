@@ -113,3 +113,11 @@ class AuditLog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     actor_user: Optional[User] = Relationship(back_populates="audit_logs")
+
+class SystemSettings(SQLModel, table=True):
+    __tablename__ = "system_settings"
+
+    key: str = Field(primary_key=True, max_length=100)
+    value: str = Field(default="")
+    description: Optional[str] = Field(default=None)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
