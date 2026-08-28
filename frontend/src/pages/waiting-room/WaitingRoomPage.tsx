@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom'
 import { hearingsApi, participantsApi } from '@/features/hearings/api'
 import type { WaitingParticipant, Hearing } from '@/types/common'
 import { VALIDATION_LABELS, DECISION_LABELS } from '@/constants/routes'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, AlertCircle } from 'lucide-react'
 
 const VALIDATION_CLASS: Record<string, string> = {
   valid:   'badge-valid',
@@ -19,17 +19,25 @@ const DECISION_CLASS: Record<string, string> = {
 
 export default function WaitingRoomPage() {
   const { id } = useParams<{ id: string }>()
-  const [hearing,      setHearing]      = useState<Hearing | null>(null)
-  const [participants, setParticipants] = useState<WaitingParticipant[]>([])
-  const [loading,      setLoading]      = useState(true)
+  const [hearing,       setHearing]       = useState<Hearing | null>(null)
+  const [participants,  setParticipants]  = useState<WaitingParticipant[]>([])
+  const [loading,       setLoading]       = useState(true)
+  const [error,         setError]         = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
+  const [actionError,   setActionError]   = useState('')
 
   const loadData = useCallback(async () => {
     if (!id) return
+    setError('')
     try {
-      const [h, p] = await Promise.all([hearingsApi.get(id), hearingsApi.participants(id)])
+      const [h, p] = await Promise.all([
+        hearingsApi.get(id),
+        hearingsApi.participants(id),
+      ])
       setHearing(h)
       setParticipants(p)
+    } catch (err: any) {
+      setError(err.response?.data?.detail ?? 'Gagal memuat data waiting room.')
     } finally {
       setLoading(false)
     }
@@ -43,32 +51,55 @@ export default function WaitingRoomPage() {
 
   const handleAction = async (participantId: string, action: 'admit' | 'hold' | 'reject') => {
     setActionLoading(participantId + action)
+    setActionError('')
     try {
       await participantsApi[action](participantId)
       await loadData()
+    } catch (err: any) {
+      setActionError(err.response?.data?.detail ?? 'Aksi gagal. Coba lagi.')
     } finally {
       setActionLoading(null)
     }
   }
 
-  const pending = participants.filter(p => !p.operator_decision)
-  const decided = participants.filter(p =>  p.operator_decision)
+  const pending = participants.filter((p: WaitingParticipant) => !p.operator_decision)
+  const decided = participants.filter((p: WaitingParticipant) =>  p.operator_decision)
 
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Waiting Room</h2>
-          {hearing && <p className="text-gray-500 text-sm mt-1">{hearing.nomor_perkara} · {hearing.jenis_sidang}</p>}
+          {hearing && (
+            <p className="text-gray-500 text-sm mt-1">
+              {hearing.nomor_perkara} · {hearing.jenis_sidang}
+            </p>
+          )}
         </div>
         <button onClick={loadData} className="btn-secondary flex items-center gap-2 text-sm">
           <RefreshCw size={15} /> Refresh
         </button>
       </div>
 
+      {/* Error global */}
+      {error && (
+        <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-lg px-4 py-3 mb-4">
+          <AlertCircle size={18} />
+          <span className="text-sm">{error}</span>
+        </div>
+      )}
+
+      {/* Error aksi operator */}
+      {actionError && (
+        <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 text-orange-700 rounded-lg px-4 py-3 mb-4">
+          <AlertCircle size={18} />
+          <span className="text-sm">{actionError}</span>
+        </div>
+      )}
+
       {loading && <p className="text-gray-500">Memuat peserta...</p>}
 
-      {!loading && (
+      {!loading && !error && (
         <>
           {/* Peserta menunggu keputusan */}
           <div className="card mb-6">

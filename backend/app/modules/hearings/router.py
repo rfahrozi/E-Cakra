@@ -58,6 +58,17 @@ class TemplateOut(BaseModel):
 
 # ── Helpers ───────────────────────────────────────────────
 
+BULAN_ID = {
+    1: "Januari", 2: "Februari", 3: "Maret", 4: "April",
+    5: "Mei", 6: "Juni", 7: "Juli", 8: "Agustus",
+    9: "September", 10: "Oktober", 11: "November", 12: "Desember",
+}
+
+
+def format_tanggal_id(d: date) -> str:
+    return f"{d.day} {BULAN_ID[d.month]} {d.year}"
+
+
 def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None) -> HearingOut:
     return HearingOut(
         id=h.id,
@@ -154,14 +165,20 @@ def list_hearings(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    # Fix N+1: ambil semua hearing + zoom_meetings dalam 2 query
     hearings = session.exec(
         select(Hearing).order_by(Hearing.tanggal_sidang.desc(), Hearing.jam_sidang.desc())
     ).all()
-    results = []
-    for h in hearings:
-        zm = session.exec(select(ZoomMeeting).where(ZoomMeeting.hearing_id == h.id)).first()
-        results.append(hearing_to_out(h, zm))
-    return results
+
+    hearing_ids = [h.id for h in hearings]
+    zoom_map: dict = {}
+    if hearing_ids:
+        zoom_meetings = session.exec(
+            select(ZoomMeeting).where(ZoomMeeting.hearing_id.in_(hearing_ids))
+        ).all()
+        zoom_map = {zm.hearing_id: zm for zm in zoom_meetings}
+
+    return [hearing_to_out(h, zoom_map.get(h.id)) for h in hearings]
 
 
 @router.get("/{hearing_id}", response_model=HearingOut)
@@ -188,7 +205,7 @@ def get_hearing_template(
         raise HTTPException(status_code=404, detail="Sidang tidak ditemukan")
     zm = session.exec(select(ZoomMeeting).where(ZoomMeeting.hearing_id == hearing_id)).first()
 
-    tanggal_str = hearing.tanggal_sidang.strftime("%d %B %Y")
+    tanggal_str = format_tanggal_id(hearing.tanggal_sidang)
     jam_str = hearing.jam_sidang.strftime("%H:%M") + " WIB"
     status_label = "TERBUKA UNTUK UMUM" if hearing.status_transparansi == TransparansiStatus.open else "TERTUTUP"
     format_nama = "JPU - [Nama] | PENASIHAT HUKUM - [Nama] | SAKSI - [Nama] | TERDAKWA - [Nama] | HAKIM - [Nama] | PANITERA - [Nama]"

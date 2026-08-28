@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from app.core.config import settings
-from app.database.session import create_db_and_tables
+from app.database.session import create_db_and_tables, engine
 from app.modules.auth.router import router as auth_router
 from app.modules.hearings.router import router as hearings_router
 from app.modules.waiting_room.router import router as waiting_room_router
@@ -14,7 +14,13 @@ from app.modules.dashboard.router import router as dashboard_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Buat tabel database
     create_db_and_tables()
+    # Seed user default
+    from app.database.init_db import seed_default_users
+    from sqlmodel import Session
+    with Session(engine) as session:
+        seed_default_users(session)
     yield
 
 

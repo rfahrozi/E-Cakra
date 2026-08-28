@@ -17,11 +17,15 @@ router = APIRouter()
 
 def verify_zoom_signature(body: bytes, timestamp: str, signature: str) -> bool:
     """Verifikasi signature Zoom webhook (FR dari SCP005)."""
-    if not settings.ZOOM_WEBHOOK_SECRET_TOKEN:
-        return True  # Skip jika belum dikonfigurasi (dev mode)
+    secret = settings.ZOOM_WEBHOOK_SECRET_TOKEN
+    if not secret:
+        # Di production, wajib ada secret token
+        if settings.APP_ENV == "production":
+            return False  # Tolak semua jika production tapi secret kosong
+        return True  # Dev mode: skip verifikasi
     msg = f"v0:{timestamp}:{body.decode()}"
     expected = "v0=" + hmac.new(
-        settings.ZOOM_WEBHOOK_SECRET_TOKEN.encode(),
+        secret.encode(),
         msg.encode(),
         hashlib.sha256,
     ).hexdigest()
