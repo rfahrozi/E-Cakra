@@ -1,16 +1,37 @@
-# E-CAKRA
-
-# Dependencies
-node_modules/
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+.eggs/
 dist/
-.cache/
+build/
+*.egg
 
-# Environment
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Environment secrets — JANGAN COMMIT
 .env
+.env.dev
 .env.local
 .env.production
 
-# Editor
+# Node
+node_modules/
+frontend/node_modules/
+
+# Build output
+dist/
+frontend/dist/
+*.tsbuildinfo
+
+# IDE
 .vscode/
 .idea/
 *.swp
@@ -20,9 +41,8 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Docker volumes (jangan commit data DB)
+postgres_data/
+
 # Logs
 *.log
-npm-debug.log*
-
-# TypeScript
-*.tsbuildinfo
