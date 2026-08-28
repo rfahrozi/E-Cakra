@@ -34,6 +34,9 @@ app = FastAPI(
     version="1.0.0",
     description="Electronic Command & Access for Court Room Administration",
     lifespan=lifespan,
+    docs_url="/docs" if settings.APP_ENV != "production" else None,
+    redoc_url="/redoc" if settings.APP_ENV != "production" else None,
+    openapi_url="/openapi.json" if settings.APP_ENV != "production" else None,
 )
 
 app.add_middleware(
