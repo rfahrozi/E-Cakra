@@ -1,10 +1,10 @@
 import hashlib
 import hmac
 import json
+from datetime import datetime, timezone
 from fastapi import APIRouter, Request, HTTPException, Header
 from sqlmodel import Session, select
 from typing import Optional
-from datetime import datetime
 
 from app.core.config import settings
 from app.database.session import engine
@@ -13,16 +13,15 @@ from app.utils.audit import log_action
 from app.utils.name_validator import validate_participant_name
 
 router = APIRouter()
+MAX_WEBHOOK_AGE_SECONDS = 300
 
 
 def verify_zoom_signature(body: bytes, timestamp: str, signature: str) -> bool:
     """Verifikasi signature Zoom webhook (FR dari SCP005)."""
     secret = settings.ZOOM_WEBHOOK_SECRET_TOKEN
     if not secret:
-        # Di production, wajib ada secret token
-        if settings.APP_ENV == "production":
-            return False  # Tolak semua jika production tapi secret kosong
-        return True  # Dev mode: skip verifikasi
+        return settings.APP_ENV != "production"
+
     msg = f"v0:{timestamp}:{body.decode()}"
     expected = "v0=" + hmac.new(
         secret.encode(),
@@ -30,6 +29,16 @@ def verify_zoom_signature(body: bytes, timestamp: str, signature: str) -> bool:
         hashlib.sha256,
     ).hexdigest()
     return hmac.compare_digest(expected, signature or "")
+
+
+def validate_webhook_timestamp(timestamp: str) -> bool:
+    try:
+        ts = int(timestamp)
+    except (TypeError, ValueError):
+        return False
+
+    now_ts = int(datetime.now(timezone.utc).timestamp())
+    return abs(now_ts - ts) <= MAX_WEBHOOK_AGE_SECONDS
 
 
 @router.post("/zoom")
@@ -40,8 +49,16 @@ async def zoom_webhook(
 ):
     body = await request.body()
 
-    # Verifikasi signature (NFR — keamanan)
-    if x_zm_signature and x_zm_request_timestamp:
+    if settings.APP_ENV == "production":
+        if not x_zm_signature or not x_zm_request_timestamp:
+            raise HTTPException(status_code=401, detail="Header webhook Zoom wajib ada di production")
+
+    if x_zm_request_timestamp and not validate_webhook_timestamp(x_zm_request_timestamp):
+        raise HTTPException(status_code=401, detail="Timestamp webhook tidak valid atau kedaluwarsa")
+
+    if x_zm_signature or x_zm_request_timestamp:
+        if not (x_zm_signature and x_zm_request_timestamp):
+            raise HTTPException(status_code=401, detail="Header webhook Zoom tidak lengkap")
         if not verify_zoom_signature(body, x_zm_request_timestamp, x_zm_signature):
             raise HTTPException(status_code=401, detail="Signature webhook tidak valid")
 
@@ -54,6 +71,8 @@ async def zoom_webhook(
 
     # Handle Zoom URL validation challenge
     if event == "endpoint.url_validation":
+        if not settings.ZOOM_WEBHOOK_SECRET_TOKEN:
+            raise HTTPException(status_code=500, detail="ZOOM_WEBHOOK_SECRET_TOKEN belum dikonfigurasi")
         plain_token = payload.get("payload", {}).get("plainToken", "")
         encrypted = hmac.new(
             settings.ZOOM_WEBHOOK_SECRET_TOKEN.encode(),

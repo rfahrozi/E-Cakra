@@ -28,9 +28,17 @@ class Settings(BaseSettings):
     def get_cors_origins(self) -> List[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
 
+    def validate_production(self) -> None:
+        if self.APP_ENV == "production":
+            if not self.SECRET_KEY or self.SECRET_KEY == "change-me-to-a-long-random-secret-key":
+                raise ValueError("SECRET_KEY production tidak valid. Wajib diubah!")
+            if not self.ZOOM_WEBHOOK_SECRET_TOKEN:
+                raise ValueError("ZOOM_WEBHOOK_SECRET_TOKEN wajib diisi di environment production.")
+
     class Config:
         env_file = ".env"
         case_sensitive = True
 
 
 settings = Settings()
+settings.validate_production()

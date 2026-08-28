@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 from datetime import datetime
 
 from app.database.session import get_session
-from app.database.models import WaitingParticipant, OperatorDecision, ZoomMeeting
+from app.database.models import WaitingParticipant, OperatorDecision, ZoomMeeting, UserRole
 from app.modules.auth.router import get_current_user, User
 from app.modules.hearings.zoom_service import control_zoom_participant
 from app.utils.audit import log_action
@@ -17,6 +17,9 @@ async def _decide(
     session: Session,
     current_user: User,
 ):
+    if current_user.role not in [UserRole.admin, UserRole.operator]:
+        raise HTTPException(status_code=403, detail="Hanya Admin atau Operator yang dapat mengelola peserta")
+
     participant = session.get(WaitingParticipant, participant_id)
     if not participant:
         raise HTTPException(status_code=404, detail="Peserta tidak ditemukan")

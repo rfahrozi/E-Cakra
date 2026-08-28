@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import date, time, datetime
 
 from app.database.session import get_session
-from app.database.models import Hearing, ZoomMeeting, TransparansiStatus
+from app.database.models import Hearing, ZoomMeeting, TransparansiStatus, WaitingParticipant, UserRole
 from app.modules.auth.router import get_current_user, User
 from app.modules.hearings.zoom_service import create_zoom_meeting
 from app.utils.audit import log_action
@@ -262,7 +262,6 @@ def delete_hearing(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    from app.database.models import UserRole
     if current_user.role not in [UserRole.admin, UserRole.panitera]:
         raise HTTPException(status_code=403, detail="Hanya Admin atau Panitera yang dapat menghapus sidang")
 
@@ -300,7 +299,6 @@ def list_participants(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
-    from app.database.models import WaitingParticipant
     hearing = session.get(Hearing, hearing_id)
     if not hearing:
         raise HTTPException(status_code=404, detail="Sidang tidak ditemukan")
