@@ -8,36 +8,7 @@ from app.database.models import User, UserRole, SystemSettings
 from app.core.security import hash_password
 
 
-def seed_default_settings(session: Session):
-    """Buat settings default jika belum ada."""
-    settings_to_seed = [
-        {
-            "key": "pengadilan_nama",
-            "value": "Pengadilan Tinggi Contoh",
-            "description": "Nama pengadilan untuk ditampilkan di aplikasi",
-        },
-        {
-            "key": "zoom_default_topic",
-            "value": "[SIDANG] {nomor_perkara} - {jenis_sidang}",
-            "description": "Template judul Zoom (gunakan {nomor_perkara} dan {jenis_sidang})",
-        },
-        {
-            "key": "public_streaming_url",
-            "value": "https://youtube.com/@pengadilantinggi",
-            "description": "Link kanal streaming publik resmi pengadilan",
-        },
-    ]
-
-    for s in settings_to_seed:
-        existing = session.get(SystemSettings, s["key"])
-        if not existing:
-            setting = SystemSettings(**s)
-            session.add(setting)
-            print(f"  ✅ Seed setting: {s['key']}")
-        else:
-            print(f"  ⏭  Setting sudah ada: {s['key']}")
-
-    session.commit()
+def seed_default_users(session: Session):
     """Buat user default jika belum ada."""
     users_to_seed = [
         {
@@ -73,6 +44,38 @@ def seed_default_settings(session: Session):
             print(f"  ✅ Seed user: {u['username']}")
         else:
             print(f"  ⏭  User sudah ada: {u['username']}")
+
+    session.commit()
+
+
+def seed_default_settings(session: Session):
+    """Buat settings default jika belum ada."""
+    settings_to_seed = [
+        {
+            "key": "pengadilan_nama",
+            "value": "Pengadilan Tinggi Contoh",
+            "description": "Nama pengadilan untuk ditampilkan di aplikasi",
+        },
+        {
+            "key": "zoom_default_topic",
+            "value": "[SIDANG] {nomor_perkara} - {jenis_sidang}",
+            "description": "Template judul Zoom (gunakan {nomor_perkara} dan {jenis_sidang})",
+        },
+        {
+            "key": "public_streaming_url",
+            "value": "https://youtube.com/@pengadilantinggi",
+            "description": "Link kanal streaming publik resmi pengadilan",
+        },
+    ]
+
+    for s in settings_to_seed:
+        existing = session.get(SystemSettings, s["key"])
+        if not existing:
+            setting = SystemSettings(**s)
+            session.add(setting)
+            print(f"  ✅ Seed setting: {s['key']}")
+        else:
+            print(f"  ⏭  Setting sudah ada: {s['key']}")
 
     session.commit()
 

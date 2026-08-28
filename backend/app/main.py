@@ -19,10 +19,11 @@ async def lifespan(app: FastAPI):
     # Buat tabel database
     create_db_and_tables()
     # Seed user default
-    from app.database.init_db import seed_default_users
+    from app.database.init_db import seed_default_users, seed_default_settings
     from sqlmodel import Session
     with Session(engine) as session:
         seed_default_users(session)
+        seed_default_settings(session)
     yield
 
 
