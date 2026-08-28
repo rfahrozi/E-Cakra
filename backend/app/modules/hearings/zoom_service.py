@@ -50,3 +50,32 @@ async def create_zoom_meeting(topic: str, start_time: str, duration: int = 120) 
         )
         resp.raise_for_status()
         return resp.json()
+
+async def control_zoom_participant(meeting_id: str, participant_uuid: str, action: str) -> bool:
+    """
+    Kirim perintah ke Zoom API untuk kontrol participant (admit / deny).
+    action bisa berupa: 'admit' atau 'deny'
+    """
+    if not participant_uuid:
+        return False
+
+    token = await get_zoom_access_token()
+    payload = {
+        "action": action,
+        "participants": [{"participant_uuid": participant_uuid}]
+    }
+
+    # Zoom endpoint untuk mengubah status peserta di waiting room
+    # PUT /meetings/{meetingId}/participants/events
+    async with httpx.AsyncClient() as client:
+        resp = await client.put(
+            f"{ZOOM_API_BASE}/meetings/{meeting_id}/participants/events",
+            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+            json=payload,
+            timeout=10,
+        )
+        if resp.status_code == 204:
+            return True
+        else:
+            print(f"Zoom API Error: {resp.status_code} - {resp.text}")
+            return False

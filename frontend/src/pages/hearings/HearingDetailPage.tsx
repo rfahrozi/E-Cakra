@@ -79,6 +79,11 @@ export default function HearingDetailPage() {
   }
 
   const handleAction = async (participantId: string, action: 'admit' | 'hold' | 'reject') => {
+    if (action === 'reject') {
+      const confirmReject = window.confirm("Apakah Anda yakin ingin menolak peserta ini? Peserta akan dikeluarkan dari Waiting Room Zoom.")
+      if (!confirmReject) return
+    }
+
     setActionLoading(participantId + action)
     try {
       await participantsApi[action](participantId)
