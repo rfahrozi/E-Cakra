@@ -10,6 +10,7 @@ from app.modules.waiting_room.router import router as waiting_room_router
 from app.modules.audit.router import router as audit_router
 from app.modules.webhook.router import router as webhook_router
 from app.modules.dashboard.router import router as dashboard_router
+from app.modules.users.router import router as users_router
 
 
 @asynccontextmanager
@@ -46,6 +47,7 @@ app.include_router(waiting_room_router, prefix="/participants", tags=["Waiting R
 app.include_router(audit_router, prefix="/audit-logs", tags=["Audit Log"])
 app.include_router(webhook_router, prefix="/webhooks", tags=["Webhook"])
 app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
+app.include_router(users_router, prefix="/users", tags=["Users"])
 
 
 @app.get("/health", tags=["Health"])

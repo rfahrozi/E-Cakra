@@ -2,14 +2,15 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/app.store'
 import { authApi } from '@/features/auth/api'
 import {
-  LayoutDashboard, Scale, Users, ClipboardList, LogOut, FileText
+  LayoutDashboard, Scale, Users, ClipboardList, LogOut, FileText, UserCog
 } from 'lucide-react'
 
 const navItems = [
-  { to: '/dashboard',       label: 'Dashboard',     icon: LayoutDashboard },
-  { to: '/hearings',        label: 'Daftar Sidang', icon: FileText },
-  { to: '/hearings/new',    label: 'Buat Sidang',   icon: Scale },
-  { to: '/audit-logs',      label: 'Audit Log',     icon: ClipboardList },
+  { to: '/dashboard',       label: 'Dashboard',     icon: LayoutDashboard, adminOnly: false },
+  { to: '/hearings',        label: 'Daftar Sidang', icon: FileText,        adminOnly: false },
+  { to: '/hearings/new',    label: 'Buat Sidang',   icon: Scale,           adminOnly: false },
+  { to: '/audit-logs',      label: 'Audit Log',     icon: ClipboardList,   adminOnly: false },
+  { to: '/users',           label: 'Pengguna',      icon: UserCog,         adminOnly: true },
 ]
 
 export default function MainLayout() {
@@ -34,7 +35,9 @@ export default function MainLayout() {
 
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
-          {navItems.map(({ to, label, icon: Icon }) => (
+          {navItems
+            .filter(item => !item.adminOnly || user?.role === 'admin')
+            .map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}

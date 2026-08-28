@@ -6,6 +6,7 @@ export const ROUTES = {
   HEARING_DETAIL: (id: string) => `/hearings/${id}`,
   WAITING_ROOM: (id: string) => `/hearings/${id}/waiting-room`,
   AUDIT_LOGS: '/audit-logs',
+  USERS_LIST: '/users',
 } as const
 
 export const VALIDATION_LABELS: Record<string, string> = {
