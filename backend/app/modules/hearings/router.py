@@ -95,6 +95,12 @@ async def create_hearing(
     session: Session = Depends(get_session),
     current_user: User = Depends(get_current_user),
 ):
+    if current_user.role not in [UserRole.admin, UserRole.panitera]:
+        raise HTTPException(
+            status_code=403,
+            detail="Hanya Admin atau Panitera yang dapat membuat sidang",
+        )
+
     hearing = Hearing(
         nomor_perkara=body.nomor_perkara,
         tanggal_sidang=body.tanggal_sidang,
