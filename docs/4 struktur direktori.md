@@ -1,116 +1,113 @@
-project-root/
-├── public/                     # Aset statis publik yang disajikan langsung
-│   ├── favicon.ico
-│   ├── robots.txt
-│   └── images/
+# Struktur Direktori E-CAKRA
+
+Proyek E-CAKRA dirancang sebagai **Containerized Modular Monolith**, yang memisahkan antara frontend dan backend dalam dua direktori utama di dalam satu *repository*.
+
+Berikut adalah struktur lengkap file dan folder (*tree*) dari akar proyek:
+
+```text
+E-Cakra/
+├── backend/                        # Aplikasi Backend (FastAPI / Python)
+│   ├── app/
+│   │   ├── core/                   # Konfigurasi sistem dan Keamanan (JWT)
+│   │   │   ├── config.py
+│   │   │   └── security.py
+│   │   ├── database/               # Koneksi PostgreSQL dan Model Data
+│   │   │   ├── init_db.py          # Skrip penyemaian data awal (seed)
+│   │   │   ├── models.py           # SQLModel Schema
+│   │   │   └── session.py
+│   │   ├── modules/                # Logika Bisnis & Endpoint (REST API)
+│   │   │   ├── audit/
+│   │   │   ├── auth/
+│   │   │   ├── dashboard/
+│   │   │   ├── hearings/           # CRUD Sidang & Integrasi Zoom
+│   │   │   ├── public/             # API Landing Page tanpa otentikasi
+│   │   │   ├── settings/
+│   │   │   ├── tasks/
+│   │   │   ├── waiting_room/       # Aksi admit/hold/reject
+│   │   │   └── webhook/            # Verifikasi HMAC dari Zoom
+│   │   ├── utils/
+│   │   │   ├── audit.py            # Helper pencatat log
+│   │   │   └── name_validator.py   # Regex penganalisis format nama peserta
+│   │   └── main.py                 # Entry point FastAPI
+│   ├── migrations/                 # (Opsional) Berkas migrasi database Alembic
+│   ├── tests/                      # Rencana direktori untuk Pytest
+│   ├── Dockerfile                  # Image Docker untuk Production
+│   ├── Dockerfile.dev              # Image Docker untuk Development (Hot-reload)
+│   └── requirements.txt            # Dependensi Python
 │
-├── src/                        # Kode sumber utama aplikasi
-│   ├── assets/                 # Aset internal aplikasi
-│   │   ├── images/
-│   │   ├── icons/
-│   │   └── fonts/
-│   │
-│   ├── components/             # Komponen UI reusable
-│   │   ├── common/             # Komponen generik: Button, Modal, Input
-│   │   ├── layout/             # Header, Sidebar, Footer, MainLayout
-│   │   └── features/           # Komponen spesifik fitur
-│   │
-│   ├── pages/                  # Halaman utama aplikasi
-│   │   ├── Home/
-│   │   ├── Auth/
-│   │   ├── Dashboard/
-│   │   └── NotFound/
-│   │
-│   ├── routes/                 # Konfigurasi routing
-│   │   ├── index.tsx
-│   │   ├── protectedRoutes.tsx
-│   │   └── routeTypes.ts
-│   │
-│   ├── hooks/                  # Custom hooks
-│   │   ├── useAuth.ts
-│   │   ├── useDebounce.ts
-│   │   └── useFetch.ts
-│   │
-│   ├── services/               # API calls, business logic, external integrations
-│   │   ├── api/
-│   │   │   ├── client.ts
-│   │   │   ├── authService.ts
-│   │   │   └── userService.ts
-│   │   └── adapters/
-│   │
-│   ├── store/                  # Global state management
-│   │   ├── slices/
-│   │   ├── index.ts
-│   │   └── middleware.ts
-│   │
-│   ├── context/                # Context API jika dipakai
-│   │   ├── AuthContext.tsx
-│   │   └── ThemeContext.tsx
-│   │
-│   ├── utils/                  # Fungsi utilitas umum
-│   │   ├── formatDate.ts
-│   │   ├── validators.ts
-│   │   └── helpers.ts
-│   │
-│   ├── config/                 # Konfigurasi aplikasi
-│   │   ├── env.ts
-│   │   ├── constants.ts
-│   │   └── appConfig.ts
-│   │
-│   ├── styles/                 # Styling global, tema, variabel desain
-│   │   ├── globals.css
-│   │   ├── theme.css
-│   │   └── variables.css
-│   │
-│   ├── types/                  # Tipe dan interface TypeScript
-│   │   ├── api.ts
-│   │   ├── auth.ts
-│   │   └── common.ts
-│   │
-│   ├── lib/                    # Wrapper/helper untuk library pihak ketiga
-│   │   ├── axios.ts
-│   │   └── logger.ts
-│   │
-│   ├── App.tsx
-│   ├── main.tsx
-│   └── vite-env.d.ts
+├── frontend/                       # Aplikasi Frontend (React / TypeScript)
+│   ├── src/
+│   │   ├── app/
+│   │   │   └── layouts/            # Template tampilan tata letak (Main & Auth)
+│   │   ├── constants/
+│   │   │   └── routes.ts           # Definisi path React Router
+│   │   ├── features/               # Pembungkus logika panggilan Axios per domain
+│   │   │   ├── audit-log/
+│   │   │   ├── auth/
+│   │   │   ├── dashboard/
+│   │   │   ├── hearings/
+│   │   │   ├── public/
+│   │   │   ├── settings/
+│   │   │   ├── tasks/
+│   │   │   └── users/
+│   │   ├── pages/                  # Komponen Visual UI (Pages)
+│   │   │   ├── audit-log/
+│   │   │   ├── dashboard/
+│   │   │   ├── hearings/
+│   │   │   ├── login/
+│   │   │   ├── public/             # LandingPage.tsx
+│   │   │   ├── settings/
+│   │   │   ├── users/
+│   │   │   └── waiting-room/
+│   │   ├── services/
+│   │   │   └── http/               # Konfigurasi instance Axios
+│   │   ├── store/
+│   │   │   └── app.store.ts        # Zustand (Global State Management)
+│   │   ├── styles/
+│   │   │   └── index.css           # Konfigurasi Tailwind & Utility Classes
+│   │   ├── types/
+│   │   │   └── common.ts           # Antarmuka (Interface) TypeScript
+│   │   ├── App.tsx                 # Routing Utama React
+│   │   └── main.tsx                # React DOM Mount
+│   ├── Dockerfile                  # Image Docker Production (Nginx + static build)
+│   ├── Dockerfile.dev              # Image Docker Development (Vite Dev Server)
+│   ├── index.html                  # Berkas HTML utama
+│   ├── nginx-fe.conf               # Aturan Nginx internal untuk routing SPA
+│   ├── package.json                # Dependensi NPM
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── tsconfig.json
+│   └── vite.config.ts
 │
-├── tests/                      # Seluruh pengujian
-│   ├── unit/
-│   │   ├── components/
-│   │   ├── hooks/
-│   │   └── utils/
-│   ├── integration/
-│   │   ├── pages/
-│   │   └── services/
-│   └── e2e/
-│       ├── auth/
-│       ├── checkout/
-│       └── dashboard/
+├── docs/                           # Seluruh Dokumen Pendukung & Arsitektur
+│   ├── deployment/                 # Dokumen Arsitektur VPS dan Keamanan
+│   │   ├── 01-architecture-overview.md
+│   │   ├── 02-server-setup-guide.md
+│   │   └── 03-security-and-maintenance.md
+│   ├── 1 prd.md                    # Product Requirement Document
+│   ├── 2 ecakra-jira-ready-sprint-plan.md
+│   ├── 3 frontend-architecture-ecakra.md
+│   ├── 4 struktur direktori.md
+│   ├── 5 backend-blueprint.md
+│   ├── 6 backend-implementation-plan.md
+│   ├── coding-standards.md
+│   ├── qa-checklist-backend.md     # Panduan Quality Assurance
+│   └── README.md
 │
-├── docs/                       # Dokumentasi proyek
-│   ├── architecture/
-│   ├── api/
-│   ├── deployment/
-│   └── coding-standards.md
+├── nginx/                          # Konfigurasi Reverse Proxy Utama Server
+│   └── nginx.conf                  # Pengaturan Port 80, Security Headers, Rate Limit
 │
-├── scripts/                    # Script otomatisasi
-│   ├── build.sh
-│   ├── deploy.sh
-│   ├── clean.sh
-│   └── seed.ts
+├── scripts/                        # (Opsional) Bash Utilities Tambahan
 │
-├── dist/                       # Output build production
-│
-├── .gitignore
-├── .env
-├── .env.example
+├── .env.example                    # Template Environment Variabel Publik
+├── .env.dev                        # Environment Variabel khusus Development
 ├── .eslintrc.js
+├── .gitignore
 ├── .prettierrc
-├── package.json
-├── package-lock.json
-├── tsconfig.json
-├── vite.config.ts
-├── README.md
+├── docker-compose.yml              # Orkestrasi Container Production
+├── docker-compose.dev.yml          # Orkestrasi Container Development
 ├── LICENSE
-└── Dockerfile
+└── README.md                       # Panduan Cara Menginstall Aplikasi
+```
+
+Struktur ini mendemonstrasikan pemisahan batas (separation of concern) yang sangat baik, di mana `backend` menangani logika sistem, `frontend` menangani pengalaman pengguna, dan *Reverse Proxy* `nginx` di root proyek berfungsi untuk menyatukan dan melindungi keduanya.
