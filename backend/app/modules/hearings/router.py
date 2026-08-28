@@ -119,10 +119,18 @@ async def create_hearing(
     # Buat Zoom meeting
     zm = None
     try:
+        from app.database.models import SystemSettings
+        setting_topic = session.get(SystemSettings, "zoom_default_topic")
+        template_topic = setting_topic.value if setting_topic else "[{status}] Sidang {nomor_perkara} - {jenis_sidang}"
+
+        # Format string menggunakan replace untuk menghindari KeyError jika format kurang tepat
+        topic = template_topic.replace("{nomor_perkara}", body.nomor_perkara)
+        topic = topic.replace("{jenis_sidang}", body.jenis_sidang)
+        topic = topic.replace("{status}", body.status_transparansi.upper())
+
         start_iso = datetime.combine(body.tanggal_sidang, body.jam_sidang).strftime(
             "%Y-%m-%dT%H:%M:%S"
         )
-        topic = f"[{body.status_transparansi.upper()}] Sidang {body.nomor_perkara} - {body.jenis_sidang}"
         zoom_data = await create_zoom_meeting(topic=topic, start_time=start_iso)
 
         zm = ZoomMeeting(

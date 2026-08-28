@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { dashboardApi } from '@/features/dashboard/api'
 import type { DashboardSummary } from '@/types/common'
@@ -11,12 +11,18 @@ export default function DashboardPage() {
   const [error, setError]     = useState('')
   const navigate              = useNavigate()
 
-  useEffect(() => {
+  const loadData = useCallback(() => {
     dashboardApi.summary()
       .then(setData)
       .catch(() => setError('Gagal memuat data dashboard'))
       .finally(() => setLoading(false))
   }, [])
+
+  useEffect(() => {
+    loadData()
+    const interval = setInterval(loadData, 15000) // auto-refresh 15 detik
+    return () => clearInterval(interval)
+  }, [loadData])
 
   return (
     <div className="p-8">
