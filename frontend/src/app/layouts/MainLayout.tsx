@@ -2,11 +2,12 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/app.store'
 import { authApi } from '@/features/auth/api'
 import {
-  LayoutDashboard, Scale, Users, ClipboardList, LogOut,
+  LayoutDashboard, Scale, Users, ClipboardList, LogOut, FileText
 } from 'lucide-react'
 
 const navItems = [
   { to: '/dashboard',       label: 'Dashboard',     icon: LayoutDashboard },
+  { to: '/hearings',        label: 'Daftar Sidang', icon: FileText },
   { to: '/hearings/new',    label: 'Buat Sidang',   icon: Scale },
   { to: '/audit-logs',      label: 'Audit Log',     icon: ClipboardList },
 ]

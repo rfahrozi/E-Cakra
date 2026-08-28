@@ -4,6 +4,7 @@ import MainLayout from '@/app/layouts/MainLayout'
 import AuthLayout from '@/app/layouts/AuthLayout'
 import LoginPage from '@/pages/login/LoginPage'
 import DashboardPage from '@/pages/dashboard/DashboardPage'
+import HearingListPage from '@/pages/hearings/HearingListPage'
 import HearingCreatePage from '@/pages/hearings/HearingCreatePage'
 import HearingDetailPage from '@/pages/hearings/HearingDetailPage'
 import WaitingRoomPage from '@/pages/waiting-room/WaitingRoomPage'
@@ -29,6 +30,7 @@ export default function App() {
       >
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/hearings" element={<HearingListPage />} />
         <Route path="/hearings/new" element={<HearingCreatePage />} />
         <Route path="/hearings/:id" element={<HearingDetailPage />} />
         <Route path="/hearings/:id/waiting-room" element={<WaitingRoomPage />} />

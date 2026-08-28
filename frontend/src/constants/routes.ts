@@ -1,6 +1,7 @@
 export const ROUTES = {
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
+  HEARINGS_LIST: '/hearings',
   HEARINGS_NEW: '/hearings/new',
   HEARING_DETAIL: (id: string) => `/hearings/${id}`,
   WAITING_ROOM: (id: string) => `/hearings/${id}/waiting-room`,

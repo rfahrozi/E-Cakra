@@ -70,7 +70,7 @@ export default function DashboardPage() {
                 {data.sidang_list.map(s => (
                   <div
                     key={s.id}
-                    onClick={() => navigate(`/hearings/${s.id}/waiting-room`)}
+                    onClick={() => navigate(`/hearings/${s.id}`)}
                     className="flex items-center justify-between py-3 cursor-pointer hover:bg-gray-50 px-2 rounded-lg transition-colors"
                   >
                     <div>
