@@ -49,6 +49,7 @@ class User(SQLModel, table=True):
 
     hearings: List["Hearing"] = Relationship(back_populates="creator")
     audit_logs: List["AuditLog"] = Relationship(back_populates="actor_user")
+    tasks: List["Task"] = Relationship(back_populates="assignee")
 
 
 class Hearing(SQLModel, table=True):
@@ -113,6 +114,30 @@ class AuditLog(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     actor_user: Optional[User] = Relationship(back_populates="audit_logs")
+
+class TaskPriority(str, Enum):
+    high = "high"
+    medium = "medium"
+    low = "low"
+
+class TaskStatus(str, Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    completed = "completed"
+
+class Task(SQLModel, table=True):
+    __tablename__ = "tasks"
+
+    id: str = Field(default_factory=gen_uuid, primary_key=True)
+    title: str = Field(max_length=200)
+    description: Optional[str] = Field(default=None)
+    priority: TaskPriority = Field(default=TaskPriority.medium)
+    status: TaskStatus = Field(default=TaskStatus.pending)
+    due_date: Optional[date] = Field(default=None)
+    assigned_to: Optional[str] = Field(default=None, foreign_key="users.id")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+
+    assignee: Optional[User] = Relationship(back_populates="tasks")
 
 class SystemSettings(SQLModel, table=True):
     __tablename__ = "system_settings"

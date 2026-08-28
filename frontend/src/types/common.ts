@@ -61,6 +61,17 @@ export interface AuditLog {
   created_at: string
 }
 
+export interface Task {
+  id: string
+  title: string
+  description: string | null
+  priority: 'high' | 'medium' | 'low'
+  status: 'pending' | 'in_progress' | 'completed'
+  due_date: string | null
+  created_at: string
+  assigned_to: string | null
+}
+
 export interface DashboardSummary {
   sidang_hari_ini: number
   peserta_menunggu: number

@@ -13,6 +13,7 @@ from app.modules.dashboard.router import router as dashboard_router
 from app.modules.users.router import router as users_router
 from app.modules.settings.router import router as settings_router
 from app.modules.public.router import router as public_router
+from app.modules.tasks.router import router as tasks_router
 
 
 @asynccontextmanager
@@ -57,6 +58,7 @@ app.include_router(dashboard_router, prefix="/dashboard", tags=["Dashboard"])
 app.include_router(users_router, prefix="/users", tags=["Users"])
 app.include_router(settings_router, prefix="/settings", tags=["Settings"])
 app.include_router(public_router, prefix="/public", tags=["Public"])
+app.include_router(tasks_router, prefix="/tasks", tags=["Tasks"])
 
 
 @app.get("/health", tags=["Health"])
