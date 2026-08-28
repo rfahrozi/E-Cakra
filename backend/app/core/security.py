@@ -4,6 +4,7 @@ from jose import JWTError, jwt
 from passlib.context import CryptContext
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
+import hashlib
 
 from app.core.config import settings
 
@@ -17,6 +18,12 @@ def hash_password(password: str) -> str:
 
 def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
+
+
+def make_jti(sub: str, exp: datetime) -> str:
+    """Buat token identifier unik dari sub + exp untuk dipakai sebagai blacklist key."""
+    raw = f"{sub}:{exp.isoformat()}"
+    return hashlib.sha256(raw.encode()).hexdigest()
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:

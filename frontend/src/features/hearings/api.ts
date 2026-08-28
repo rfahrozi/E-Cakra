@@ -1,6 +1,20 @@
 import client from '@/services/http/client'
 import type { Hearing, HearingTemplate, WaitingParticipant } from '@/types/common'
 
+export interface HearingUpdateData {
+  nomor_perkara?: string
+  tanggal_sidang?: string
+  jam_sidang?: string
+  jenis_sidang?: string
+  status_transparansi?: 'open' | 'closed'
+  terdakwa?: string
+  pengadilan_pengirim?: string
+  kejaksaan_negeri?: string
+  lapas_rutan?: string
+  agenda?: string
+  status_sidang?: string
+}
+
 export const hearingsApi = {
   list: async (): Promise<Hearing[]> => {
     const res = await client.get('/hearings')
@@ -24,6 +38,10 @@ export const hearingsApi = {
     status_sidang?: string
   }): Promise<Hearing> => {
     const res = await client.post('/hearings', data)
+    return res.data
+  },
+  update: async (id: string, data: HearingUpdateData): Promise<Hearing> => {
+    const res = await client.patch(`/hearings/${id}`, data)
     return res.data
   },
   template: async (id: string): Promise<HearingTemplate> => {

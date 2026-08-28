@@ -159,3 +159,16 @@ class SystemSettings(SQLModel, table=True):
     value: str = Field(default="")
     description: Optional[str] = Field(default=None)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+
+class RevokedToken(SQLModel, table=True):
+    """
+    Blacklist JWT token saat logout.
+    Token yang ada di tabel ini dianggap tidak valid meskipun belum expire.
+    Cleanup otomatis dilakukan dengan menghapus record yang sudah melewati exp.
+    """
+    __tablename__ = "revoked_tokens"
+
+    jti: str = Field(primary_key=True, max_length=200)   # JWT ID (sub+exp hash)
+    revoked_at: datetime = Field(default_factory=datetime.utcnow)
+    expires_at: datetime                                   # untuk cleanup berkala

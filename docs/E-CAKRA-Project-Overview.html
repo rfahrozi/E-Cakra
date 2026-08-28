@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-CAKRA - Electronic Command & Access for Court Room Administration</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #eff6ff;
+            --secondary: #2563eb;
+            --accent: #f59e0b;
+            --text-dark: #1f2937;
+            --text-gray: #4b5563;
+            --bg-light: #f9fafb;
+            --border: #e5e7eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--bg-light);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+            border-bottom: 5px solid var(--accent);
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+        }
+
+        header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        nav {
+            background: white;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        nav a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.2s;
+        }
+
+        nav a:hover {
+            background-color: var(--primary-light);
+            color: var(--secondary);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            background: white;
+            border-radius: 8px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-light);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        h3 {
+            color: var(--text-dark);
+            font-size: 1.3rem;
+            margin: 1.5rem 0 1rem;
+        }
+
+        p {
+            margin-bottom: 1rem;
+            color: var(--text-gray);
+        }
+
+        ul, ol {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+            color: var(--text-gray);
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .feature-card {
+            background: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+        }
+
+        .feature-card h4 {
+            color: var(--secondary);
+            margin-bottom: 0.5rem;
+            font-size: 1.1rem;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tech-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border: 1px solid #bfdbfe;
+        }
+
+        .workflow {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .workflow::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--primary-light);
+        }
+
+        .workflow-step {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .workflow-step::before {
+            content: '';
+            position: absolute;
+            left: -2.4rem;
+            top: 0.3rem;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: var(--secondary);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--secondary);
+        }
+
+        .workflow-step h4 {
+            color: var(--primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .note {
+            background: #fffbeb;
+            border-left: 4px solid var(--warning);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1.5rem 0;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .role-admin { background: #fee2e2; color: #b91c1c; }
+        .role-panitera { background: #dbeafe; color: #1d4ed8; }
+        .role-operator { background: #d1fae5; color: #047857; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--bg-light);
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        footer {
+            background: var(--text-dark);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            header h1 { font-size: 2rem; }
+            .container { padding: 1rem; }
+            section { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>E-CAKRA</h1>
+        <p>Electronic Command & Access for Court Room Administration</p>
+    </header>
+
+    <nav>
+        <a href="#pendahuluan">Pendahuluan</a>
+        <a href="#arsitektur">Arsitektur & Teknologi</a>
+        <a href="#pengguna">Peran Pengguna</a>
+        <a href="#fitur-utama">Fitur Utama</a>
+        <a href="#alur-penggunaan">Alur Operasional</a>
+        <a href="#keamanan">Keamanan & Audit</a>
+    </nav>
+
+    <div class="container">
+
+        <!-- PENDAHULUAN -->
+        <section id="pendahuluan">
+            <h2>📌 Pendahuluan</h2>
+            <p><strong>E-CAKRA</strong> adalah portal internal berbasis web yang dirancang khusus untuk Pengadilan Tinggi guna mengotomatisasi, menstandarkan, dan mengamankan pengelolaan persidangan elektronik melalui integrasi langsung dengan Zoom API.</p>
+
+            <p>Sistem ini lahir untuk menyelesaikan masalah operasional klasik persidangan online:</p>
+            <ul>
+                <li>Pembuatan <i>meeting</i> manual yang memakan waktu dan rawan kesalahan (*human error*).</li>
+                <li>Konfigurasi keamanan ruang sidang yang tidak konsisten (seringkali lupa mengaktifkan Waiting Room).</li>
+                <li>Kesulitan dalam memvalidasi identitas peserta sebelum sidang dimulai.</li>
+                <li>Tidak adanya rekam jejak (*audit trail*) hukum yang terpusat atas aktivitas operator.</li>
+            </ul>
+
+            <div class="note">
+                <strong>Status Saat Ini:</strong> E-CAKRA telah mencapai status implementasi MVP ~97% dengan 5 alur inti yang berjalan end-to-end secara production-ready.
+            </div>
+        </section>
+
+        <!-- ARSITEKTUR -->
+        <section id="arsitektur">
+            <h2>🏗️ Arsitektur & Teknologi</h2>
+            <p>E-CAKRA dibangun menggunakan arsitektur <strong>Containerized Modular Monolith</strong> yang stabil, berkinerja tinggi, dan mudah dikelola melalui Docker. Sistem dibagi menjadi 4 container utama yang berjalan secara terisolasi.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Backend (API Core)</h4>
+                    <p>Menangani seluruh logika bisnis, otorisasi, integrasi Zoom Server-to-Server, dan webhook event.</p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Python 3.12</span>
+                        <span class="tech-badge">FastAPI</span>
+                        <span class="tech-badge">SQLModel (ORM)</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h4>Frontend (UI/UX)</h4>
+                    <p>Single Page Application (SPA) yang responsif, menampilkan dashboard operasional real-time.</p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">React 18</span>
+                        <span class="tech-badge">TypeScript</span>
+                        <span class="tech-badge">Vite</span>
+                        <span class="tech-badge">Tailwind CSS</span>
+                        <span class="tech-badge">Zustand</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h4>Database (Storage)</h4>
+                    <p>Penyimpanan persisten sebagai <i>Single Source of Truth</i> untuk seluruh entitas sistem.</p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">PostgreSQL 16</span>
+                    </div>
+                </div>
+                <div class="feature-card">
+                    <h4>Reverse Proxy (Gateway)</h4>
+                    <p>Gerbang masuk internet yang menangani SSL/TLS, *routing*, dan *rate-limiting* perlindungan serangan.</p>
+                    <div class="tech-stack">
+                        <span class="tech-badge">Nginx Alpine</span>
+                        <span class="tech-badge">Let's Encrypt SSL</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- PENGGUNA -->
+        <section id="pengguna">
+            <h2>👥 Peran Pengguna (RBAC)</h2>
+            <p>Sistem E-CAKRA menerapkan <i>Role-Based Access Control</i> (RBAC) ketat yang membagi pengguna ke dalam 3 peran (role) dengan hak akses spesifik:</p>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Peran</th>
+                        <th>Tanggung Jawab & Hak Akses</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><span class="role-badge role-admin">Administrator</span></td>
+                        <td>Super user IT. Memiliki hak penuh atas seluruh sistem. Dapat mengelola data Pengguna, mengubah Pengaturan Sistem, mengelola sidang, dan melihat Audit Log keseluruhan.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge role-panitera">Panitera</span></td>
+                        <td>Petugas persidangan. Berhak <strong>membuat</strong>, mengubah, dan menghapus jadwal sidang. Dapat membuka ruang sidang dan mengontrol peserta di Waiting Room.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="role-badge role-operator">Operator Sidang</span></td>
+                        <td>Staf operasional. <strong>Hanya berhak mengontrol peserta</strong> di Waiting Room (Admit/Hold/Reject) saat sidang berlangsung. Tidak diizinkan membuat atau menghapus jadwal sidang.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+        <!-- FITUR UTAMA -->
+        <section id="fitur-utama">
+            <h2>⭐ Fitur Utama (Core Features)</h2>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>1. Automasi Zoom Meeting</h4>
+                    <p>Setiap pembuatan jadwal sidang akan otomatis memicu pembuatan Zoom Meeting di belakang layar. Konfigurasi keamanan (Waiting Room, Mute on Entry) dikunci "ON" tanpa bisa diubah oleh pengguna.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h4>2. Live Streaming RTMP YouTube</h4>
+                    <p>Sistem mendukung prinsip <i>Public Trial</i>. Untuk perkara berstatus <strong>"Terbuka"</strong>, sistem otomatis mengatur Custom Live Streaming Zoom ke kanal YouTube resmi Pengadilan Tinggi, sehingga publik tidak perlu masuk ke ruang Zoom utama.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h4>3. Visual Triage (Validasi Peserta)</h4>
+                    <p>Aplikasi otomatis menganalisis nama peserta yang masuk ke Waiting Room dan memberikan indikator warna: Hijau (format baku: JPU, HAKIM, dll), Kuning (perlu review manual), Merah (nama invalid/perangkat).</p>
+                </div>
+
+                <div class="feature-card">
+                    <h4>4. Waiting Room Management</h4>
+                    <p>Antarmuka real-time (auto-refresh 15 detik) untuk mengeksekusi tindakan pada peserta (Admit, Hold, Reject). Aksi di antarmuka ini akan langsung tersinkronisasi ke Zoom Cloud via API.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h4>5. Template Teks Distribusi</h4>
+                    <p>Generasi teks baku otomatis untuk dibagikan via WhatsApp (E-Berpadu/SIPP). Memuat detail perkara, link bergabung, password, dan instruksi wajib format nama.</p>
+                </div>
+
+                <div class="feature-card">
+                    <h4>6. Portal Publik</h4>
+                    <p>Halaman tanpa login (<i>Landing Page</i>) yang ditujukan untuk masyarakat. Hanya menampilkan jadwal sidang yang berstatus "Terbuka" beserta link siaran langsung YouTube.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ALUR PENGGUNAAN -->
+        <section id="alur-penggunaan">
+            <h2>🔄 Alur Operasional (End-to-End Workflow)</h2>
+            <p>Berikut adalah siklus lengkap penggunaan aplikasi E-CAKRA dari pembuatan hingga pelaksanaan sidang.</p>
+
+            <div style="margin: 2rem 0; overflow-x: auto; background: var(--bg-light); padding: 1.5rem; border-radius: 8px; border: 1px solid var(--border); text-align: center;">
+                <h4 style="margin-bottom: 1rem; color: var(--text-dark);">Bagan Alir Sistem (Flowchart)</h4>
+                <div class="mermaid" style="display: flex; justify-content: center;">
+                graph TD
+                    %% Definisi Style
+                    classDef actor fill:#e0f2fe,stroke:#2563eb,stroke-width:2px,color:#1e3a8a
+                    classDef system fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#92400e
+                    classDef zoom fill:#2563eb,stroke:#1e3a8a,stroke-width:2px,color:white
+
+                    %% Aktor
+                    P([Panitera/Admin]):::actor
+                    O([Operator Sidang]):::actor
+                    U([Peserta Sidang/Publik]):::actor
+
+                    %% Node Sistem
+                    subgraph "E-CAKRA System"
+                        S1[Form Buat Sidang]
+                        S2[(Database E-CAKRA)]
+                        S3[Template Distribusi]
+                        S4[Portal Publik]
+                        S5[Visual Triage & Waiting Room UI]
+                        S6[Audit Log]
+                    end
+
+                    %% Node Eksternal
+                    subgraph "External Services"
+                        Z1((Zoom API)):::zoom
+                        Z2((Zoom Webhook)):::zoom
+                        Y((YouTube Live))
+                    end
+
+                    %% Alur Persiapan
+                    P -->|1. Input Data Sidang| S1
+                    S1 -->|2. Simpan Data| S2
+                    S1 -->|3. Request Meeting| Z1
+                    Z1 -->|4. Return Meeting Info| S2
+
+                    S1 -.->|Jika Sidang Terbuka| Y
+                    S2 -.->|Tampil di| S4
+                    U -.->|Akses Info Publik| S4
+
+                    S2 -->|5. Generate| S3
+                    P -->|6. Salin & Bagikan| S3
+                    S3 -->|Via WhatsApp/Email| U
+
+                    %% Alur Pelaksanaan
+                    U -->|7. Klik Join Link| Z2
+                    Z2 -->|8. Webhook Participant Joined| S5
+                    S5 -->|9. Validasi Nama Otomatis| S5
+
+                    O -->|10. Lihat Daftar Peserta| S5
+                    O -->|11. Klik Admit/Reject| S5
+                    S5 -->|12. Kirim Instruksi| Z1
+                    Z1 -->|13. Peserta Masuk/Dikeluarkan| U
+
+                    %% Audit
+                    S5 -->|Catat Aksi| S6
+                    S1 -->|Catat Aksi| S6
+                </div>
+                <script type="module">
+                    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+                    mermaid.initialize({ startOnLoad: true, theme: 'default' });
+                </script>
+            </div>
+
+            <div class="workflow">
+                <div class="workflow-step">
+                    <h4>1. Persiapan Jadwal (Oleh: Panitera/Admin)</h4>
+                    <p>Panitera login ke sistem dan menekan menu <strong>Buat Sidang</strong>. Mengisi nomor perkara, tanggal, jam, jenis sidang, dan status transparansi (Terbuka/Tertutup).</p>
+                    <p><em>Sistem secara otomatis:</em> Menyimpan ke database, menembak API Zoom untuk membuat meeting dengan keamanan ketat, dan mengatur sinkronisasi RTMP YouTube (jika sidang Terbuka).</p>
+                </div>
+
+                <div class="workflow-step">
+                    <h4>2. Distribusi Undangan (Oleh: Panitera)</h4>
+                    <p>Panitera membuka halaman <strong>Detail Sidang</strong>, menyalin <strong>Template Distribusi</strong> dengan satu kali klik, lalu membagikannya ke WhatsApp/Email Pihak Berperkara (JPU, Penasihat Hukum, Rutan).</p>
+                </div>
+
+                <div class="workflow-step">
+                    <h4>3. Pembukaan Sidang (Oleh: Panitera)</h4>
+                    <p>Pada hari H, Panitera menekan tombol <strong>Buka di Zoom</strong> pada detail sidang. Sistem akan meluncurkan aplikasi Zoom lokal milik Panitera sebagai <em>Host</em> utama.</p>
+                </div>
+
+                <div class="workflow-step">
+                    <h4>4. Validasi Peserta (Oleh: Operator/Panitera)</h4>
+                    <p>Peserta eksternal mulai mengeklik link dan tertahan di Waiting Room Zoom. <em>Webhook</em> Zoom memberi sinyal ke backend E-CAKRA.</p>
+                    <p>Operator membuka menu <strong>Mode Waiting Room Penuh</strong> di E-CAKRA. Sistem akan menampilkan daftar peserta lengkap dengan lencana (badge) validasi <em>Visual Triage</em> otomatis.</p>
+                </div>
+
+                <div class="workflow-step">
+                    <h4>5. Eksekusi Masuk Ruangan (Oleh: Operator)</h4>
+                    <p>Berdasarkan indikator visual, Operator menekan tombol <strong>Admit</strong> (Izinkan) untuk JPU/Hakim, atau <strong>Reject</strong> (Tolak) untuk nama-nama acak/anonim.</p>
+                    <p>Sistem mengirim perintah kembali ke Zoom API untuk mengeksekusi status peserta tersebut secara <em>real-time</em> di awan.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- KEAMANAN -->
+        <section id="keamanan">
+            <h2>🛡️ Keamanan & Rekam Jejak (Audit)</h2>
+            <p>Mengingat E-CAKRA digunakan dalam konteks peradilan hukum, aspek keamanan dan integritas data menjadi prioritas utama (<i>Hardened Security</i>).</p>
+
+            <ul>
+                <li><strong>Otentikasi Kuat & Token Blacklist:</strong> Sesi menggunakan JWT berumur pendek (60 menit). Saat user melakukan <i>Logout</i>, token seketika dimasukkan ke dalam basis data <i>Revoked Tokens</i> sehingga tidak bisa digunakan lagi walaupun durasinya belum habis.</li>
+                <li><strong>HTTPS / TLS 1.3 Strict:</strong> Nginx diatur untuk memaksa lalu lintas di enkripsi tingkat tinggi dengan injeksi <i>Strict-Transport-Security (HSTS)</i> dan pengamanan <i>XSS/Frame-Options</i>.</li>
+                <li><strong>API Rate Limiting:</strong> Sistem memblokir upaya <i>Brute-force</i> login dan serangan DDoS dengan membatasi maksimal 10 permintaan per detik per IP.</li>
+                <li><strong>Verifikasi Webhook (Anti-Replay):</strong> Semua notifikasi kedatangan peserta dari Zoom divalidasi keasliannya menggunakan tanda tangan kriptografi <i>HMAC-SHA256</i>. Jika timestamp kedaluwarsa (> 5 menit), data otomatis ditolak untuk mencegah <i>Replay Attack</i>.</li>
+                <li><strong>Legal Audit Trail (Immutable):</strong> Seluruh tindakan esensial—mulai dari siapa yang login, siapa yang membuat sidang, hingga operator mana yang mengklik 'Admit' pada peserta—tercatat abadi dengan timestamp UTC di tabel `audit_logs` untuk dipertanggungjawabkan secara hukum.</li>
+            </ul>
+        </section>
+
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Pengadilan Tinggi — Proyek E-CAKRA. Semua dokumen diselaraskan dengan spesifikasi <strong>FastAPI & React MVP Final</strong>.</p>
+    </footer>
+
+</body>
+</html>

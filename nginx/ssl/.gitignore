@@ -1,0 +1,6 @@
+# Sertifikat SSL — JANGAN pernah di-commit ke Git
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx

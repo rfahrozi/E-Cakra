@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { hearingsApi, participantsApi } from '@/features/hearings/api'
 import type { Hearing, HearingTemplate, WaitingParticipant } from '@/types/common'
 import { useAuthStore } from '@/store/app.store'
-import { Copy, CheckCheck, Users, Trash2, RefreshCw, AlertCircle } from 'lucide-react'
+import { Copy, CheckCheck, Users, Trash2, RefreshCw, AlertCircle, Pencil } from 'lucide-react'
 import { TRANSPARANSI_LABELS, VALIDATION_LABELS, DECISION_LABELS } from '@/constants/routes'
 
 const VALIDATION_CLASS: Record<string, string> = {
@@ -117,13 +117,21 @@ export default function HearingDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           {(user?.role === 'admin' || user?.role === 'panitera') && (
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="btn-secondary text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center gap-2"
-            >
-              <Trash2 size={18} /> {deleting ? 'Menghapus...' : 'Hapus Sidang'}
-            </button>
+            <>
+              <button
+                onClick={() => navigate(`/hearings/${id}/edit`)}
+                className="btn-secondary flex items-center gap-2"
+              >
+                <Pencil size={18} /> Edit Sidang
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="btn-secondary text-red-600 hover:text-red-700 hover:bg-red-50 flex items-center gap-2"
+              >
+                <Trash2 size={18} /> {deleting ? 'Menghapus...' : 'Hapus Sidang'}
+              </button>
+            </>
           )}
           <button
             onClick={() => navigate(`/hearings/${id}/waiting-room`)}

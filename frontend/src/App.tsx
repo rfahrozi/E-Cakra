@@ -7,7 +7,9 @@ import DashboardPage from '@/pages/dashboard/DashboardPage'
 import HearingListPage from '@/pages/hearings/HearingListPage'
 import HearingCreatePage from '@/pages/hearings/HearingCreatePage'
 import HearingDetailPage from '@/pages/hearings/HearingDetailPage'
+import HearingEditPage from '@/pages/hearings/HearingEditPage'
 import UserListPage from '@/pages/users/UserListPage'
+import ProfilePage from '@/pages/profile/ProfilePage'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import WaitingRoomPage from '@/pages/waiting-room/WaitingRoomPage'
 import AuditLogPage from '@/pages/audit-log/AuditLogPage'
@@ -36,10 +38,12 @@ export default function App() {
         <Route path="/hearings" element={<HearingListPage />} />
         <Route path="/hearings/new" element={<HearingCreatePage />} />
         <Route path="/hearings/:id" element={<HearingDetailPage />} />
+        <Route path="/hearings/:id/edit" element={<HearingEditPage />} />
         <Route path="/hearings/:id/waiting-room" element={<WaitingRoomPage />} />
         <Route path="/audit-logs" element={<AuditLogPage />} />
         <Route path="/users" element={<UserListPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>

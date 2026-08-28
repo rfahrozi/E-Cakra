@@ -61,6 +61,60 @@ async def create_zoom_meeting(topic: str, start_time: str, duration: int = 120) 
     except httpx.RequestError as e:
         raise RuntimeError(f"Gagal terhubung ke API Zoom: {str(e)}")
 
+async def update_zoom_meeting(meeting_id: str, topic: str, start_time: str, duration: int = 120) -> bool:
+    """
+    Update Zoom meeting yang sudah ada (topik, waktu, durasi).
+    Dipanggil saat sidang diedit agar Zoom tetap sinkron.
+    """
+    token = await get_zoom_access_token()
+    payload = {
+        "topic": topic,
+        "start_time": start_time,
+        "duration": duration,
+        "timezone": "Asia/Jakarta",
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.patch(
+                f"{ZOOM_API_BASE}/meetings/{meeting_id}",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=15,
+            )
+            if resp.status_code == 204:
+                return True
+            raise RuntimeError(f"Gagal update Zoom Meeting: HTTP {resp.status_code} - {resp.text}")
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Gagal terhubung ke API Zoom saat update: {str(e)}")
+
+
+async def setup_zoom_livestream(meeting_id: str, stream_url: str, stream_key: str, page_url: str = "") -> bool:
+    """
+    Konfigurasi Custom Live Streaming (RTMP) pada Zoom meeting (F-019).
+    Dipanggil saat sidang 'open' dibuat agar stream ke YouTube otomatis tersedia.
+    """
+    token = await get_zoom_access_token()
+    payload = {
+        "stream_url": stream_url,
+        "stream_key": stream_key,
+        "page_url": page_url or stream_url,
+    }
+    try:
+        async with httpx.AsyncClient() as client:
+            # 1. Set livestream config
+            resp = await client.patch(
+                f"{ZOOM_API_BASE}/meetings/{meeting_id}/livestream",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=15,
+            )
+            if resp.status_code not in (200, 204):
+                raise RuntimeError(f"Gagal set livestream config: HTTP {resp.status_code} - {resp.text}")
+            return True
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Gagal terhubung ke Zoom saat setup livestream: {str(e)}")
+
+
 async def control_zoom_participant(meeting_id: str, participant_uuid: str, action: str) -> bool:
     """
     Kirim perintah ke Zoom API untuk kontrol participant (admit / deny).

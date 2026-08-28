@@ -17,4 +17,8 @@ export const authApi = {
     const res = await client.get('/auth/me')
     return res.data
   },
+  changePassword: async (old_password: string, new_password: string) => {
+    const res = await client.patch('/auth/me/password', { old_password, new_password })
+    return res.data
+  },
 }

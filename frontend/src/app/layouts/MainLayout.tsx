@@ -4,21 +4,21 @@ import { authApi } from '@/features/auth/api'
 import {
   LayoutDashboard,
   Scale,
-  
   ClipboardList,
   LogOut,
   FileText,
   UserCog,
   Settings,
+  UserCircle,
 } from 'lucide-react'
 
 const navItems = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
-  { to: '/hearings', label: 'Daftar Sidang', icon: FileText, adminOnly: false },
-  { to: '/hearings/new', label: 'Buat Sidang', icon: Scale, adminOnly: false },
-  { to: '/audit-logs', label: 'Audit Log', icon: ClipboardList, adminOnly: false },
-  { to: '/users', label: 'Pengguna', icon: UserCog, adminOnly: true },
-  { to: '/settings', label: 'Pengaturan', icon: Settings, adminOnly: true },
+  { to: '/dashboard',    label: 'Dashboard',    icon: LayoutDashboard, roles: ['admin', 'operator', 'panitera'] },
+  { to: '/hearings',     label: 'Daftar Sidang', icon: FileText,        roles: ['admin', 'operator', 'panitera'] },
+  { to: '/hearings/new', label: 'Buat Sidang',  icon: Scale,            roles: ['admin', 'panitera'] },
+  { to: '/audit-logs',   label: 'Audit Log',    icon: ClipboardList,    roles: ['admin', 'operator', 'panitera'] },
+  { to: '/users',        label: 'Pengguna',     icon: UserCog,          roles: ['admin'] },
+  { to: '/settings',     label: 'Pengaturan',   icon: Settings,         roles: ['admin'] },
 ]
 
 export default function MainLayout() {
@@ -46,7 +46,7 @@ export default function MainLayout() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems
-            .filter((item) => !item.adminOnly || user?.role === 'admin')
+            .filter((item) => item.roles.includes(user?.role ?? ''))
             .map(({ to, label, icon: Icon }) => (
               <NavLink
                 key={to}
@@ -65,13 +65,25 @@ export default function MainLayout() {
             ))}
         </nav>
 
-        {/* User info */}
+        {/* User info + Profil */}
         <div className="px-4 py-4 border-t border-slate-700">
-          <p className="text-slate-300 text-sm font-medium truncate">{user?.nama}</p>
-          <p className="text-slate-500 text-xs capitalize">{user?.role}</p>
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              `flex items-center gap-2 mb-2 rounded-lg px-1 py-1 transition-colors ${
+                isActive ? 'text-white' : 'text-slate-300 hover:text-white'
+              }`
+            }
+          >
+            <UserCircle size={18} className="shrink-0" />
+            <div className="overflow-hidden">
+              <p className="text-sm font-medium truncate">{user?.nama}</p>
+              <p className="text-xs capitalize text-slate-400">{user?.role}</p>
+            </div>
+          </NavLink>
           <button
             onClick={handleLogout}
-            className="mt-3 flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm transition-colors"
+            className="mt-1 flex items-center gap-2 text-slate-400 hover:text-red-400 text-sm transition-colors"
           >
             <LogOut size={16} /> Keluar
           </button>

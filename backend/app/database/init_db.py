@@ -66,6 +66,16 @@ def seed_default_settings(session: Session):
             "value": "https://youtube.com/@pengadilantinggi",
             "description": "Link kanal streaming publik resmi pengadilan",
         },
+        {
+            "key": "zoom_stream_rtmp_url",
+            "value": "",
+            "description": "RTMP Ingest URL dari YouTube Live (contoh: rtmp://a.rtmp.youtube.com/live2)",
+        },
+        {
+            "key": "zoom_stream_key",
+            "value": "",
+            "description": "Stream Key rahasia dari YouTube Live untuk Zoom Custom Livestream (F-019). Isi dari YouTube Studio → Go Live → Stream Key.",
+        },
     ]
 
     for s in settings_to_seed:
