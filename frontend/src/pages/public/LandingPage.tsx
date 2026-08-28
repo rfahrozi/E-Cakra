@@ -1,21 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { publicApi, PublicLandingResponse } from '@/features/public/api'
-import { Scale, MonitorPlay, Clock, AlertCircle, Info, RefreshCw, ChevronRight } from 'lucide-react'
+import { publicApi, PublicLandingResponse, PublicHearingItem } from '@/features/public/api'
+import { Scale, MonitorPlay, Calendar, Search, LogIn, ChevronRight, User, CalendarDays, Monitor, CheckCircle, Info } from 'lucide-react'
+
+type TabType = 'hari_ini' | 'akan_datang' | 'selesai'
 
 export default function LandingPage() {
   const [data, setData] = useState<PublicLandingResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [lastUpdate, setLastUpdate] = useState<string>('')
+
+  // Filter state
+  const [activeTab, setActiveTab] = useState<TabType>('hari_ini')
+  const [searchQuery, setSearchQuery] = useState('')
+
+  // View State
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
 
   const loadData = () => {
     setLoading(true)
-    publicApi.getTodayHearings()
-      .then((res) => {
-        setData(res)
-        setLastUpdate(new Date().toLocaleTimeString('id-ID'))
-      })
+    publicApi.getHearings()
+      .then((res) => setData(res))
       .catch(() => setError('Gagal memuat jadwal persidangan publik.'))
       .finally(() => setLoading(false))
   }
@@ -26,241 +31,284 @@ export default function LandingPage() {
     return () => clearInterval(interval)
   }, [])
 
-  const hasHearings = data && data.hearings.length > 0
+  // Fungsi Filter
+  const getFilteredHearings = (): PublicHearingItem[] => {
+    if (!data) return []
+
+    const todayStr = data.tanggal_hari_ini // format YYYY-MM-DD
+    let filtered = data.hearings
+
+    // Filter berdasarkan Tab
+    if (activeTab === 'hari_ini') {
+      filtered = filtered.filter(h => h.tanggal_sidang === todayStr && h.status_sidang !== 'Selesai')
+    } else if (activeTab === 'akan_datang') {
+      filtered = filtered.filter(h => h.tanggal_sidang > todayStr && h.status_sidang !== 'Selesai')
+    } else if (activeTab === 'selesai') {
+      filtered = filtered.filter(h => h.status_sidang === 'Selesai' || h.tanggal_sidang < todayStr)
+    }
+
+    // Filter berdasarkan Pencarian (Nomor Perkara atau Terdakwa)
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase()
+      filtered = filtered.filter(h =>
+        h.nomor_perkara.toLowerCase().includes(q) ||
+        (h.terdakwa && h.terdakwa.toLowerCase().includes(q))
+      )
+    }
+
+    return filtered
+  }
+
+  const filteredHearings = getFilteredHearings()
+  const isStreamingAvailable = activeTab === 'hari_ini' && filteredHearings.length > 0
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
-      {/* ── HEADER PUBLIK ── */}
-      <header className="bg-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center shadow-inner">
-              <Scale size={20} className="text-white" />
-            </div>
-            <div>
-              <h1 className="font-bold text-xl tracking-tight leading-none">E-CAKRA</h1>
-              <p className="text-xs text-blue-200 font-medium mt-1 uppercase tracking-wider">
-                {data?.pengadilan_nama ?? 'Portal Informasi Persidangan'}
-              </p>
-            </div>
-          </div>
-          <nav className="flex items-center gap-6">
-            <a href="#jadwal" className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">Jadwal Sidang</a>
-            <a href="#panduan" className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">Panduan</a>
-            <Link to="/login" className="text-sm font-bold text-white bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg border border-slate-700 transition-all">
-              Portal Internal &rarr;
-            </Link>
-          </nav>
-        </div>
-      </header>
+    <div className="min-h-screen font-sans" style={{ backgroundColor: '#0A1A2F' }}>
 
-      {/* ── MAIN CONTENT ── */}
-      <main className="flex-1 w-full">
+      {/* ── BACKGROUND LAYER (Meniru gaya Blur Refrensi) ── */}
+      <div
+        className="fixed inset-0 z-0 opacity-10 bg-cover bg-center"
+        style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=2000&auto=format&fit=crop")' }}
+      />
+      <div className="fixed inset-0 z-0 bg-gradient-to-b from-[#0A1A2F]/80 to-[#0A1A2F] backdrop-blur-md" />
 
-        {/* Hero Section */}
-        <section className="bg-white border-b border-slate-200 py-12 lg:py-16">
-          <div className="max-w-4xl mx-auto px-6 text-center">
-            <span className="inline-block py-1 px-3 rounded-full bg-blue-50 text-blue-700 text-xs font-bold uppercase tracking-wider mb-4 border border-blue-100">
-              Layanan Informasi Publik
-            </span>
-            <h2 className="text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">
-              Jadwal Sidang Terbuka
-            </h2>
-            <p className="text-slate-500 text-base lg:text-lg mt-4 max-w-2xl mx-auto leading-relaxed">
-              Pantau jadwal sidang yang terbuka untuk umum, cek status siaran langsung, dan akses informasi publik pengadilan secara transparan dalam satu halaman.
+      {/* ── KONTEN UTAMA (Foreground) ── */}
+      <div className="relative z-10 flex flex-col min-h-screen">
+
+        {/* Header / Kop */}
+        <header className="py-8">
+          <div className="max-w-7xl mx-auto px-6 flex flex-col items-center justify-center text-center">
+            <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center border-2 border-yellow-400 shadow-[0_0_15px_rgba(250,204,21,0.3)] mb-4">
+              <Scale size={28} className="text-white" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-white tracking-wide drop-shadow-md">E-PERSIDANGAN</h1>
+            <p className="text-sm font-bold text-yellow-400 mt-1 uppercase tracking-[0.2em] drop-shadow-md">
+              {data?.pengadilan_nama ?? 'PORTAL JADWAL PERSIDANGAN PUBLIK'}
             </p>
           </div>
-        </section>
+        </header>
 
-        {/* Content Section */}
-        <section id="jadwal" className="max-w-6xl mx-auto px-6 py-10">
+        <main className="flex-1 w-full max-w-7xl mx-auto px-4 pb-16">
 
-          {/* Trust Signal & Status Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between bg-white border border-slate-200 rounded-xl p-4 shadow-sm mb-8">
-            <div className="flex items-center gap-6">
-              <div>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Tanggal Sidang</p>
-                <p className="font-bold text-slate-800">
-                  {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                </p>
+          {/* ── PANEL KENDALI (Glassmorphism ringan) ── */}
+          <div className="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl p-4 md:p-6 shadow-2xl mb-8">
+
+            {/* Top Bar: Navigasi & Pencarian */}
+            <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-6">
+
+              {/* Menu Tabs Kiri */}
+              <div className="flex bg-[#11253E] border border-slate-600/50 rounded-xl overflow-hidden w-full md:w-auto">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 font-bold text-sm transition-colors ${
+                    viewMode === 'list' ? 'bg-yellow-500 text-yellow-950' : 'text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  <Scale size={16} /> Daftar Sidang
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 font-bold text-sm transition-colors ${
+                    viewMode === 'calendar' ? 'bg-yellow-500 text-yellow-950' : 'text-slate-300 hover:bg-white/5'
+                  }`}
+                >
+                  <CalendarDays size={16} /> Kalender Sidang
+                </button>
               </div>
-              <div className="w-px h-8 bg-slate-200 hidden sm:block"></div>
-              <div>
-                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Total Sidang Terbuka</p>
-                <p className="font-bold text-blue-700">{data?.hearings.length ?? 0} Perkara</p>
+
+              {/* Search Bar */}
+              <div className="relative flex-1 w-full md:max-w-md">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+                <input
+                  type="text"
+                  placeholder="Cari No. Perkara / Terdakwa..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full bg-[#11253E] border border-slate-600/50 text-white placeholder-slate-400 pl-11 pr-4 py-3.5 rounded-xl outline-none focus:border-yellow-500/50 focus:ring-1 focus:ring-yellow-500/50 transition-all text-sm font-medium"
+                />
               </div>
+
+              {/* Action Buttons Kanan */}
+              <div className="flex gap-3 w-full md:w-auto">
+                <a
+                  href={isStreamingAvailable ? (data?.public_streaming_url || '#') : '#'}
+                  target={isStreamingAvailable ? "_blank" : "_self"}
+                  rel="noreferrer"
+                  className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all ${
+                    isStreamingAvailable
+                      ? 'bg-blue-500 hover:bg-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]'
+                      : 'bg-blue-500 hover:bg-blue-400 text-white shadow-[0_0_15px_rgba(59,130,246,0.4)]' // Selalu aktif karena monitoring
+                  }`}
+                >
+                  <MonitorPlay size={18} /> Monitoring Jadwal
+                </a>
+                <Link to="/login" className="flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-3.5 bg-yellow-500 hover:bg-yellow-400 text-yellow-950 rounded-xl font-bold text-sm transition-all shadow-[0_0_15px_rgba(234,179,8,0.2)]">
+                  <LogIn size={18} /> Kembali ke Login
+                </Link>
+              </div>
+
             </div>
 
-            <div className="flex items-center gap-3 mt-4 sm:mt-0 text-sm text-slate-500">
-              <span className="flex items-center gap-1.5 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-200">
-                <Clock size={14} /> Diperbarui: {lastUpdate} WIB
-              </span>
-              <button onClick={loadData} className="p-1.5 hover:bg-slate-100 rounded-md text-slate-400 hover:text-blue-600 transition-colors" title="Muat ulang data">
-                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            {/* Sub-Filter Tabs: Waktu */}
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => setActiveTab('hari_ini')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
+                  activeTab === 'hari_ini' ? 'bg-white text-slate-900 shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                🚀 Hari Ini
+              </button>
+              <button
+                onClick={() => setActiveTab('akan_datang')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
+                  activeTab === 'akan_datang' ? 'bg-blue-500 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                📅 Akan Datang
+              </button>
+              <button
+                onClick={() => setActiveTab('selesai')}
+                className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-bold text-sm transition-all ${
+                  activeTab === 'selesai' ? 'bg-emerald-500 text-white shadow-md' : 'bg-white/10 text-white hover:bg-white/20'
+                }`}
+              >
+                <CheckCircle size={16} /> Selesai / Putus
               </button>
             </div>
           </div>
 
-          {/* Grid Layout Utama */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+          {/* ── KONTEN KARTU PERKARA / KALENDER ── */}
+          {loading && !data ? (
+            <div className="py-20 text-center flex flex-col items-center text-white/50">
+              <RefreshCw size={40} className="animate-spin mb-4" />
+              <p className="font-semibold tracking-wider">Memuat Jadwal Sidang...</p>
+            </div>
+          ) : error ? (
+            <div className="py-10 text-center">
+              <div className="inline-flex items-center gap-3 bg-red-500/20 border border-red-500/50 text-red-200 px-6 py-4 rounded-xl">
+                <AlertCircle size={20} />
+                <p className="font-medium">{error}</p>
+              </div>
+            </div>
+          ) : viewMode === 'calendar' ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-16 text-center shadow-inner">
+              <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <CalendarDays size={36} className="text-white/30" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Kalender Persidangan</h3>
+              <p className="text-slate-400 max-w-md mx-auto mb-6">
+                Fitur kalender bulanan sedang dalam pengembangan. Silakan gunakan mode "Daftar Sidang" untuk melihat jadwal terperinci.
+              </p>
+              <button onClick={() => setViewMode('list')} className="inline-flex items-center justify-center px-6 py-2.5 rounded-xl font-bold text-sm bg-blue-500 hover:bg-blue-400 text-white transition-all">
+                Kembali ke Daftar Sidang
+              </button>
+            </div>
+          ) : filteredHearings.length === 0 ? (
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-16 text-center shadow-inner">
+              <div className="w-20 h-20 bg-white/5 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                <Calendar size={36} className="text-white/30" />
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Belum ada jadwal persidangan</h3>
+              <p className="text-slate-400 max-w-md mx-auto">
+                Tidak ditemukan jadwal sidang yang cocok dengan kriteria "{
+                  activeTab === 'hari_ini' ? 'Hari Ini' : activeTab === 'akan_datang' ? 'Akan Datang' : 'Selesai'
+                }" atau pencarian Anda.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+              {filteredHearings.map((h) => (
+                <div key={h.id} className="bg-white rounded-2xl p-6 shadow-xl flex flex-col h-full transform hover:-translate-y-1 transition-all duration-300">
 
-            {/* Kolom Kiri: Daftar Sidang (2/3 ruang) */}
-            <div className="lg:col-span-2 space-y-4">
-
-              {loading && !data && (
-                <div className="flex justify-center items-center py-20 bg-white rounded-xl border border-slate-200">
-                  <div className="flex flex-col items-center gap-3 text-slate-400">
-                    <RefreshCw size={32} className="animate-spin" />
-                    <p className="font-medium">Memuat jadwal dari sistem...</p>
+                  {/* Card Header */}
+                  <div className="flex justify-between items-start mb-5 pb-4 border-b border-slate-100">
+                    <span className="bg-blue-50 text-blue-700 text-xs font-bold px-3 py-1.5 rounded-full truncate max-w-[65%] border border-blue-100">
+                      {h.pengadilan_pengirim || 'Tingkat Banding'}
+                    </span>
+                    <span className={`text-xs font-bold px-3 py-1.5 rounded-full border ${
+                      h.status_sidang === 'Selesai' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-slate-50 text-slate-600 border-slate-200'
+                    }`}>
+                      {h.status_sidang}
+                    </span>
                   </div>
-                </div>
-              )}
 
-              {error && (
-                <div className="flex items-center gap-3 text-red-700 bg-red-50 px-5 py-4 rounded-xl border border-red-200">
-                  <AlertCircle size={24} className="shrink-0" />
-                  <p className="font-medium">{error}</p>
-                </div>
-              )}
+                  {/* Perkara Number */}
+                  <h3 className="font-extrabold text-slate-900 text-lg leading-tight mb-4">
+                    {h.nomor_perkara}
+                  </h3>
 
-              {!loading && !error && data && !hasHearings && (
-                /* Empty State yang Actionable */
-                <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center shadow-sm">
-                  <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-5">
-                    <Scale size={32} className="text-slate-400" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-800">Belum ada sidang terbuka hari ini</h3>
-                  <p className="text-slate-500 mt-2 max-w-md mx-auto">
-                    Saat ini tidak ada persidangan yang dijadwalkan dengan status "Terbuka Untuk Umum". Silakan cek kembali nanti atau lihat jadwal hari berikutnya.
-                  </p>
-                  <div className="mt-8 flex justify-center gap-4">
-                    <a href="https://sipp.mahkamahagung.go.id/" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 bg-white border border-slate-300 text-slate-700 font-medium rounded-lg hover:bg-slate-50 transition-colors shadow-sm text-sm">
-                      Cek Jadwal di SIPP <ChevronRight size={16}/>
-                    </a>
-                  </div>
-                </div>
-              )}
-
-              {!loading && !error && data && hasHearings && (
-                <div className="space-y-4">
-                  {data.hearings.map((h, i) => (
-                    <div key={i} className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-4 group">
+                  {/* Attributes */}
+                  <div className="space-y-4 flex-1">
+                    <div className="flex items-start gap-3">
+                      <User size={16} className="text-slate-400 shrink-0 mt-0.5" />
                       <div>
-                        <div className="flex items-center gap-2 mb-1.5">
-                          <span className="w-2 h-2 rounded-full bg-blue-500"></span>
-                          <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{h.jenis_sidang}</p>
-                        </div>
-                        <h3 className="font-extrabold text-blue-900 text-xl group-hover:text-blue-700 transition-colors">{h.nomor_perkara}</h3>
+                        <p className="text-xs font-semibold text-slate-400 uppercase">Terdakwa / Pemohon</p>
+                        <p className="text-sm font-bold text-slate-800 leading-snug mt-0.5">{h.terdakwa || '-'}</p>
                       </div>
-                      <div className="shrink-0 flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto border-t sm:border-t-0 border-slate-100 pt-3 sm:pt-0 mt-3 sm:mt-0">
-                        <div className="flex flex-col sm:items-end">
-                          <span className="text-xs text-slate-400 font-medium uppercase mb-0.5">Waktu (WIB)</span>
-                          <div className="inline-flex items-center gap-1.5 bg-blue-50 text-blue-800 px-3 py-1.5 rounded-lg font-bold">
-                            <Clock size={16} className="text-blue-600" />
-                            {h.jam_sidang.slice(0, 5)}
-                          </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <CalendarDays size={16} className="text-slate-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 uppercase">Waktu Sidang</p>
+                        <p className="text-sm font-bold text-slate-800 leading-snug mt-0.5">
+                          {new Date(h.tanggal_sidang).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                          <span className="mx-1.5 font-normal text-slate-300">|</span>
+                          <span className="text-blue-600">Pukul {h.jam_sidang.slice(0, 5)} WIB</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-start gap-3">
+                      <Monitor size={16} className="text-slate-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 uppercase">Ruang Sidang (Virtual)</p>
+                        <div className="mt-1 flex flex-wrap gap-2">
+                          <span className="bg-slate-100 text-slate-700 text-xs font-bold px-2 py-1 rounded border border-slate-200">Zoom Cloud</span>
+                          {h.zoom_meeting_id && (
+                            <span className="bg-slate-100 text-slate-600 text-xs font-mono px-2 py-1 rounded border border-slate-200">ID: {h.zoom_meeting_id}</span>
+                          )}
                         </div>
                       </div>
                     </div>
-                  ))}
+
+                    <div className="flex items-start gap-3">
+                      <Scale size={16} className="text-slate-400 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 uppercase">Agenda</p>
+                        <p className="text-sm font-bold text-slate-800 leading-snug mt-0.5">{h.agenda || 'Pemberitahuan Persidangan'}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Detail Button Placeholder */}
+                  <div className="mt-6 pt-4 border-t border-slate-100">
+                    <button className="w-full py-2.5 rounded-xl border-2 border-blue-100 text-blue-700 font-bold text-sm hover:bg-blue-50 transition-colors flex items-center justify-center gap-2">
+                      <Info size={16} /> Detail Perkara
+                    </button>
+                  </div>
+
                 </div>
-              )}
+              ))}
             </div>
+          )}
 
-            {/* Kolom Kanan: Live Streaming & Info (1/3 ruang) */}
-            <div className="lg:col-span-1 space-y-6">
+        </main>
 
-              {/* Card Live Streaming */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm sticky top-24">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-slate-800 text-lg">Siaran Langsung</h3>
-                  <span className={`flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full border ${hasHearings ? 'bg-red-50 text-red-600 border-red-200' : 'bg-slate-100 text-slate-500 border-slate-200'}`}>
-                    {hasHearings && <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse"></span>}
-                    {hasHearings ? 'LIVE' : 'OFFLINE'}
-                  </span>
-                </div>
-
-                <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                  Ikuti jalannya persidangan terbuka hari ini secara virtual melalui kanal resmi pengadilan.
-                </p>
-
-                <a
-                  href={hasHearings ? (data?.public_streaming_url || '#') : '#'}
-                  target={hasHearings ? "_blank" : "_self"}
-                  rel="noreferrer"
-                  className={`w-full flex items-center justify-center gap-2 font-bold py-3.5 px-4 rounded-xl transition-all shadow-sm ${
-                    hasHearings
-                      ? 'bg-red-600 hover:bg-red-700 text-white'
-                      : 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
-                  }`}
-                  aria-disabled={!hasHearings}
-                >
-                  <MonitorPlay size={20} />
-                  {hasHearings ? 'Tonton Live Streaming' : 'Belum Ada Siaran Aktif'}
-                </a>
-
-                <div className="mt-5 p-3 bg-blue-50 rounded-lg border border-blue-100 flex gap-2.5">
-                  <Info size={16} className="text-blue-600 shrink-0 mt-0.5" />
-                  <p className="text-xs text-blue-800 leading-relaxed">
-                    Tayangan ini <strong>hanya tersedia</strong> untuk sidang dengan status Terbuka Untuk Umum sesuai undang-undang.
-                  </p>
-                </div>
-              </div>
-            </div>
-
+        {/* Footer Minimalist */}
+        <footer className="mt-auto py-6 border-t border-white/10 text-center">
+          <p className="text-slate-400 text-sm font-medium">
+            &copy; {new Date().getFullYear()} {data?.pengadilan_nama ?? 'Pengadilan Tinggi'}. All rights reserved.
+          </p>
+          <div className="flex justify-center gap-4 mt-2">
+            <a href="#" className="text-slate-500 hover:text-white text-xs">Kebijakan Privasi</a>
+            <span className="text-slate-700">&bull;</span>
+            <a href="#" className="text-slate-500 hover:text-white text-xs">Syarat & Ketentuan</a>
           </div>
-        </section>
+        </footer>
 
-        {/* FAQ / Panduan Section */}
-        <section id="panduan" className="bg-slate-100 border-t border-slate-200 py-16">
-          <div className="max-w-6xl mx-auto px-6">
-            <div className="text-center mb-10">
-              <h3 className="text-2xl font-bold text-slate-900">Informasi Akses Publik</h3>
-              <p className="text-slate-500 mt-2">Ketentuan dasar yang perlu Anda ketahui</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-blue-600 font-bold">1</span>
-                </div>
-                <h4 className="font-bold text-slate-800 mb-2">Prinsip Sidang Terbuka</h4>
-                <p className="text-sm text-slate-600 leading-relaxed">Sidang dinyatakan terbuka untuk umum dapat dipantau oleh masyarakat. Perkara sensitif (anak/asusila) dinyatakan tertutup dan tidak disiarkan.</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-blue-600 font-bold">2</span>
-                </div>
-                <h4 className="font-bold text-slate-800 mb-2">Akses Tanpa Login</h4>
-                <p className="text-sm text-slate-600 leading-relaxed">Masyarakat tidak perlu melakukan pendaftaran atau login ke dalam portal ini. Cukup klik tombol siaran langsung jika jadwal tersedia.</p>
-              </div>
-              <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <div className="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center mb-4">
-                  <span className="text-blue-600 font-bold">3</span>
-                </div>
-                <h4 className="font-bold text-slate-800 mb-2">Jadwal & Akurasi</h4>
-                <p className="text-sm text-slate-600 leading-relaxed">Data pada halaman ini ditarik langsung secara otomatis dari sistem jadwal ruang sidang E-CAKRA sesuai waktu nyata (WIB).</p>
-              </div>
-            </div>
-          </div>
-        </section>
-      </main>
-
-      {/* ── FOOTER RESMI ── */}
-      <footer className="bg-slate-900 py-10 mt-auto border-t border-slate-800">
-        <div className="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="flex items-center gap-3">
-            <Scale size={24} className="text-slate-600" />
-            <p className="text-slate-400 font-medium text-sm">
-              &copy; {new Date().getFullYear()} {data?.pengadilan_nama ?? 'Sistem Pengadilan'}.
-            </p>
-          </div>
-          <div className="flex gap-6 text-sm">
-            <a href="#" className="text-slate-500 hover:text-white transition-colors">Syarat & Ketentuan</a>
-            <a href="#" className="text-slate-500 hover:text-white transition-colors">Kebijakan Privasi</a>
-            <a href="#" className="text-slate-500 hover:text-white transition-colors">Hubungi Helpdesk</a>
-          </div>
-        </div>
-      </footer>
+      </div>
     </div>
   )
 }
