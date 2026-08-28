@@ -78,7 +78,7 @@ def logout(current_user: User = Depends(get_current_user)):
         entity_id=current_user.id,
         description=f"Logout: {current_user.username}",
     )
-    return {"message": "Logout berhasil"}
+    return {"message": "Logout berhasil, harap hapus token di client"}
 
 
 @router.get("/me", response_model=MeResponse)

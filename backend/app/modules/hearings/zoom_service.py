@@ -8,15 +8,20 @@ ZOOM_API_BASE  = "https://api.zoom.us/v2"
 
 async def get_zoom_access_token() -> str:
     """Ambil access token Zoom via Server-to-Server OAuth."""
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            ZOOM_TOKEN_URL,
-            params={"grant_type": "account_credentials", "account_id": settings.ZOOM_ACCOUNT_ID},
-            auth=(settings.ZOOM_CLIENT_ID, settings.ZOOM_CLIENT_SECRET),
-            timeout=10,
-        )
-        resp.raise_for_status()
-        return resp.json()["access_token"]
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                ZOOM_TOKEN_URL,
+                params={"grant_type": "account_credentials", "account_id": settings.ZOOM_ACCOUNT_ID},
+                auth=(settings.ZOOM_CLIENT_ID, settings.ZOOM_CLIENT_SECRET),
+                timeout=10,
+            )
+            resp.raise_for_status()
+            return resp.json()["access_token"]
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"Gagal mendapatkan token Zoom: HTTP {e.response.status_code}")
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Gagal terhubung ke Zoom: {str(e)}")
 
 
 async def create_zoom_meeting(topic: str, start_time: str, duration: int = 120) -> dict:
@@ -41,15 +46,20 @@ async def create_zoom_meeting(topic: str, start_time: str, duration: int = 120) 
             "use_pmi": False,
         },
     }
-    async with httpx.AsyncClient() as client:
-        resp = await client.post(
-            f"{ZOOM_API_BASE}/users/{settings.ZOOM_HOST_USER_ID}/meetings",
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=15,
-        )
-        resp.raise_for_status()
-        return resp.json()
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.post(
+                f"{ZOOM_API_BASE}/users/{settings.ZOOM_HOST_USER_ID}/meetings",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=15,
+            )
+            resp.raise_for_status()
+            return resp.json()
+    except httpx.HTTPStatusError as e:
+        raise RuntimeError(f"Gagal membuat Zoom Meeting: HTTP {e.response.status_code} - {e.response.text}")
+    except httpx.RequestError as e:
+        raise RuntimeError(f"Gagal terhubung ke API Zoom: {str(e)}")
 
 async def control_zoom_participant(meeting_id: str, participant_uuid: str, action: str) -> bool:
     """
@@ -67,15 +77,19 @@ async def control_zoom_participant(meeting_id: str, participant_uuid: str, actio
 
     # Zoom endpoint untuk mengubah status peserta di waiting room
     # PUT /meetings/{meetingId}/participants/events
-    async with httpx.AsyncClient() as client:
-        resp = await client.put(
-            f"{ZOOM_API_BASE}/meetings/{meeting_id}/participants/events",
-            headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
-            json=payload,
-            timeout=10,
-        )
-        if resp.status_code == 204:
-            return True
-        else:
-            print(f"Zoom API Error: {resp.status_code} - {resp.text}")
-            return False
+    try:
+        async with httpx.AsyncClient() as client:
+            resp = await client.put(
+                f"{ZOOM_API_BASE}/meetings/{meeting_id}/participants/events",
+                headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json"},
+                json=payload,
+                timeout=10,
+            )
+            if resp.status_code == 204:
+                return True
+            else:
+                print(f"Zoom API Error: {resp.status_code} - {resp.text}")
+                return False
+    except httpx.RequestError as e:
+        print(f"Gagal terhubung ke Zoom API untuk kontrol peserta: {str(e)}")
+        return False

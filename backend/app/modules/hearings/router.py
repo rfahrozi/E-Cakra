@@ -40,6 +40,8 @@ class HearingOut(BaseModel):
     created_by: Optional[str]
     created_at: datetime
     zoom_meeting: Optional[dict] = None
+    zoom_status: str = "not_attempted"
+    zoom_error: Optional[str] = None
 
 
 class TemplateOut(BaseModel):
@@ -69,7 +71,12 @@ def format_tanggal_id(d: date) -> str:
     return f"{d.day} {BULAN_ID[d.month]} {d.year}"
 
 
-def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None) -> HearingOut:
+def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None, z_status: str = "created", z_error: Optional[str] = None) -> HearingOut:
+    if not zm and z_status == "created":
+        # Jika belum ada ZoomMeeting dan tidak ada status eksplisit, asumsikan "not_attempted"
+        # kecuali untuk kasus get data (dimana jika zm kosong, asumsikan gagal/tidak ada)
+        z_status = "not_attempted"
+
     return HearingOut(
         id=h.id,
         nomor_perkara=h.nomor_perkara,
@@ -84,6 +91,8 @@ def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None) -> HearingOut:
             "join_url": zm.join_url,
             "password": zm.password,
         } if zm else None,
+        zoom_status=z_status,
+        zoom_error=z_error,
     )
 
 
@@ -124,6 +133,9 @@ async def create_hearing(
 
     # Buat Zoom meeting
     zm = None
+    zoom_status = "not_attempted"
+    zoom_error = None
+
     try:
         from app.database.models import SystemSettings
         setting_topic = session.get(SystemSettings, "zoom_default_topic")
@@ -152,6 +164,7 @@ async def create_hearing(
         session.add(zm)
         session.commit()
         session.refresh(zm)
+        zoom_status = "created"
 
         log_action(
             action="CREATE_ZOOM_MEETING",
@@ -162,6 +175,8 @@ async def create_hearing(
             description=f"Zoom meeting dibuat: {zm.zoom_meeting_id} untuk sidang {hearing.nomor_perkara}",
         )
     except Exception as e:
+        zoom_status = "failed"
+        zoom_error = str(e)
         log_action(
             action="ERROR_ZOOM_MEETING",
             actor=current_user.username,
@@ -171,7 +186,7 @@ async def create_hearing(
             description=f"Gagal membuat Zoom meeting: {str(e)}",
         )
 
-    return hearing_to_out(hearing, zm)
+    return hearing_to_out(hearing, zm, zoom_status, zoom_error)
 
 
 @router.get("", response_model=List[HearingOut])

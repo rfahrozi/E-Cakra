@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     # Auth
     SECRET_KEY: str = "change-me-to-a-long-random-secret-key"
     ALGORITHM: str = "HS256"
+
+    # Digunakan hanya sebagai fallback; override via env var di production disarankan.
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Zoom
@@ -30,6 +32,7 @@ class Settings(BaseSettings):
 
     def validate_production(self) -> None:
         if self.APP_ENV == "production":
+            self.ACCESS_TOKEN_EXPIRE_MINUTES = 15  # Waktu kadaluwarsa token JWT lebih pendek di production
             if not self.SECRET_KEY or self.SECRET_KEY == "change-me-to-a-long-random-secret-key":
                 raise ValueError("SECRET_KEY production tidak valid. Wajib diubah!")
             if not self.ZOOM_WEBHOOK_SECRET_TOKEN:
