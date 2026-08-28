@@ -1,4 +1,5 @@
 export const ROUTES = {
+  PUBLIC: '/',
   LOGIN: '/login',
   DASHBOARD: '/dashboard',
   HEARINGS_LIST: '/hearings',

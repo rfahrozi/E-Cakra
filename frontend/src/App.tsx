@@ -11,6 +11,7 @@ import UserListPage from '@/pages/users/UserListPage'
 import SettingsPage from '@/pages/settings/SettingsPage'
 import WaitingRoomPage from '@/pages/waiting-room/WaitingRoomPage'
 import AuditLogPage from '@/pages/audit-log/AuditLogPage'
+import LandingPage from '@/pages/public/LandingPage'
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuthStore()
@@ -20,6 +21,7 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<LoginPage />} />
       </Route>
@@ -30,7 +32,6 @@ export default function App() {
           </PrivateRoute>
         }
       >
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/hearings" element={<HearingListPage />} />
         <Route path="/hearings/new" element={<HearingCreatePage />} />
