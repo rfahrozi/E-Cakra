@@ -28,6 +28,9 @@ export const hearingsApi = {
     const res = await client.get(`/hearings/${id}/participants`)
     return res.data
   },
+  delete: async (id: string): Promise<void> => {
+    await client.delete(`/hearings/${id}`)
+  },
 }
 
 export const participantsApi = {

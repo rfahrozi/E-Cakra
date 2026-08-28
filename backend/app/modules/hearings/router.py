@@ -248,6 +248,44 @@ Status        : {status_label}
     )
 
 
+@router.delete("/{hearing_id}", status_code=204)
+def delete_hearing(
+    hearing_id: str,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    from app.database.models import UserRole
+    if current_user.role not in [UserRole.admin, UserRole.panitera]:
+        raise HTTPException(status_code=403, detail="Hanya Admin atau Panitera yang dapat menghapus sidang")
+
+    hearing = session.get(Hearing, hearing_id)
+    if not hearing:
+        raise HTTPException(status_code=404, detail="Sidang tidak ditemukan")
+
+    nomor_perkara = hearing.nomor_perkara
+
+    # Hapus peserta dan zoom meeting yang terkait
+    participants = session.exec(select(WaitingParticipant).where(WaitingParticipant.hearing_id == hearing_id)).all()
+    for p in participants:
+        session.delete(p)
+
+    zm = session.exec(select(ZoomMeeting).where(ZoomMeeting.hearing_id == hearing_id)).first()
+    if zm:
+        session.delete(zm)
+
+    session.delete(hearing)
+    session.commit()
+
+    log_action(
+        action="DELETE_HEARING",
+        actor=current_user.username,
+        actor_user_id=current_user.id,
+        entity_type="hearing",
+        entity_id=hearing_id,
+        description=f"Sidang dihapus: {nomor_perkara}",
+    )
+    return None
+
 @router.get("/{hearing_id}/participants")
 def list_participants(
     hearing_id: str,
