@@ -67,7 +67,7 @@ async def control_zoom_participant(meeting_id: str, participant_uuid: str, actio
     action bisa berupa: 'admit' atau 'deny'
     """
     if not participant_uuid:
-        return False
+        raise RuntimeError("participant_uuid Zoom tidak tersedia")
 
     token = await get_zoom_access_token()
     payload = {
@@ -87,9 +87,6 @@ async def control_zoom_participant(meeting_id: str, participant_uuid: str, actio
             )
             if resp.status_code == 204:
                 return True
-            else:
-                print(f"Zoom API Error: {resp.status_code} - {resp.text}")
-                return False
+            raise RuntimeError(f"Zoom participant control gagal: HTTP {resp.status_code} - {resp.text}")
     except httpx.RequestError as e:
-        print(f"Gagal terhubung ke Zoom API untuk kontrol peserta: {str(e)}")
-        return False
+        raise RuntimeError(f"Gagal terhubung ke Zoom saat kontrol participant: {str(e)}")

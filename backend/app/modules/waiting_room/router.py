@@ -31,11 +31,22 @@ async def _decide(
     # 'admit' dikirim 'admit', 'reject' dikirim 'deny'.
     # Untuk 'hold', tidak ada endpoint API Zoom khusus untuk mengubah status tanpa action admit/deny,
     # jadi kita ubah saja secara lokal.
-    if zm and participant.source_event_id:
-        if decision == OperatorDecision.admit:
-            await control_zoom_participant(zm.zoom_meeting_id, participant.source_event_id, "admit")
-        elif decision == OperatorDecision.reject:
-            await control_zoom_participant(zm.zoom_meeting_id, participant.source_event_id, "deny")
+    try:
+        if zm and participant.source_event_id:
+            if decision == OperatorDecision.admit:
+                await control_zoom_participant(zm.zoom_meeting_id, participant.source_event_id, "admit")
+            elif decision == OperatorDecision.reject:
+                await control_zoom_participant(zm.zoom_meeting_id, participant.source_event_id, "deny")
+    except Exception as e:
+        log_action(
+            action="ERROR_ZOOM_PARTICIPANT_CONTROL",
+            actor=current_user.username,
+            actor_user_id=current_user.id,
+            entity_type="participant",
+            entity_id=participant.id,
+            description=f"Gagal sinkronisasi aksi peserta ke Zoom: {str(e)}",
+        )
+        raise HTTPException(status_code=502, detail=f"Gagal mengirim aksi ke Zoom: {str(e)}")
 
     participant.operator_decision = decision
     participant.updated_at = datetime.utcnow()
