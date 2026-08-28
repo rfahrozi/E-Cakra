@@ -5,7 +5,7 @@ from typing import Optional, List
 from datetime import date, time, datetime
 
 from app.database.session import get_session
-from app.database.models import Hearing, ZoomMeeting, TransparansiStatus, WaitingParticipant, UserRole
+from app.database.models import Hearing, ZoomMeeting, TransparansiStatus, WaitingParticipant, UserRole, HearingStatus
 from app.modules.auth.router import get_current_user, User
 from app.modules.hearings.zoom_service import create_zoom_meeting
 from app.utils.audit import log_action
@@ -22,6 +22,13 @@ class HearingCreate(BaseModel):
     jenis_sidang: str = "Pidana Biasa"
     status_transparansi: TransparansiStatus = TransparansiStatus.open
 
+    terdakwa: Optional[str] = None
+    pengadilan_pengirim: Optional[str] = None
+    kejaksaan_negeri: Optional[str] = None
+    lapas_rutan: Optional[str] = None
+    agenda: Optional[str] = None
+    status_sidang: str = "Terjadwal"
+
     @field_validator("nomor_perkara")
     @classmethod
     def nomor_perkara_not_empty(cls, v):
@@ -37,6 +44,14 @@ class HearingOut(BaseModel):
     jam_sidang: time
     jenis_sidang: str
     status_transparansi: str
+
+    terdakwa: Optional[str]
+    pengadilan_pengirim: Optional[str]
+    kejaksaan_negeri: Optional[str]
+    lapas_rutan: Optional[str]
+    agenda: Optional[str]
+    status_sidang: str
+
     created_by: Optional[str]
     created_at: datetime
     zoom_meeting: Optional[dict] = None
@@ -84,6 +99,12 @@ def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None, z_status: str =
         jam_sidang=h.jam_sidang,
         jenis_sidang=h.jenis_sidang,
         status_transparansi=h.status_transparansi,
+        terdakwa=h.terdakwa,
+        pengadilan_pengirim=h.pengadilan_pengirim,
+        kejaksaan_negeri=h.kejaksaan_negeri,
+        lapas_rutan=h.lapas_rutan,
+        agenda=h.agenda,
+        status_sidang=h.status_sidang.value if hasattr(h.status_sidang, 'value') else h.status_sidang,
         created_by=h.created_by,
         created_at=h.created_at,
         zoom_meeting={
@@ -116,6 +137,12 @@ async def create_hearing(
         jam_sidang=body.jam_sidang,
         jenis_sidang=body.jenis_sidang,
         status_transparansi=body.status_transparansi,
+        terdakwa=body.terdakwa,
+        pengadilan_pengirim=body.pengadilan_pengirim,
+        kejaksaan_negeri=body.kejaksaan_negeri,
+        lapas_rutan=body.lapas_rutan,
+        agenda=body.agenda,
+        status_sidang=body.status_sidang,
         created_by=current_user.id,
     )
     session.add(hearing)
@@ -241,11 +268,20 @@ def get_hearing_template(
 
     teks = f"""📋 INFORMASI SIDANG ELEKTRONIK — E-CAKRA
 {'='*50}
-Nomor Perkara : {hearing.nomor_perkara}
+[ Detail Perkara ]
+Nomor Perkara       : {hearing.nomor_perkara}
+Terdakwa            : {hearing.terdakwa or '-'}
+Pengadilan Pengirim : {hearing.pengadilan_pengirim or '-'}
+Kejaksaan Negeri    : {hearing.kejaksaan_negeri or '-'}
+Lapas / Rutan       : {hearing.lapas_rutan or '-'}
+
+[ Informasi Sidang ]
 Tanggal       : {tanggal_str}
 Jam           : {jam_str}
 Jenis Sidang  : {hearing.jenis_sidang}
-Status        : {status_label}
+Agenda        : {hearing.agenda or '-'}
+Status Sidang : {hearing.status_sidang.value if hasattr(hearing.status_sidang, 'value') else hearing.status_sidang}
+Sifat Sidang  : {status_label}
 {'='*50}
 🔗 Zoom Meeting ID : {zm.zoom_meeting_id if zm else '-'}
 🔗 Join URL        : {zm.join_url if zm else '-'}

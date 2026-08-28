@@ -17,6 +17,12 @@ export interface Hearing {
   jam_sidang: string
   jenis_sidang: string
   status_transparansi: TransparansiStatus
+  terdakwa?: string | null
+  pengadilan_pengirim?: string | null
+  kejaksaan_negeri?: string | null
+  lapas_rutan?: string | null
+  agenda?: string | null
+  status_sidang?: string
   created_by: string | null
   created_at: string
   zoom_meeting: ZoomMeetingBrief | null

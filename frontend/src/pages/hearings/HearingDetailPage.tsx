@@ -137,12 +137,29 @@ export default function HearingDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-1 space-y-6">
           <div className="card space-y-3">
-            <h3 className="font-semibold text-gray-800 mb-2">Detail Sidang</h3>
+            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">Detail Perkara Banding</h3>
             {[
-              ['Tanggal', new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', { dateStyle: 'long' })],
-              ['Jam', hearing.jam_sidang.slice(0,5) + ' WIB'],
-              ['Jenis', hearing.jenis_sidang],
-              ['Status', TRANSPARANSI_LABELS[hearing.status_transparansi]],
+              ['Terdakwa', hearing.terdakwa || '-'],
+              ['Pengadilan Negeri Pengirim (PN)', hearing.pengadilan_pengirim || '-'],
+              ['Kejaksaan Negeri (KEJARI)', hearing.kejaksaan_negeri || '-'],
+              ['Lapas / Rutan Terkait', hearing.lapas_rutan || '-'],
+            ].map(([k, v]) => (
+              <div key={k} className="flex flex-col text-sm mb-2">
+                <span className="text-gray-500 mb-0.5">{k}</span>
+                <span className="font-medium text-gray-800">{v}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="card space-y-3">
+            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">Informasi Sidang</h3>
+            {[
+              ['Tanggal', new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', { dateStyle: 'full' })],
+              ['Waktu', hearing.jam_sidang.slice(0,5) + ' WIB'],
+              ['Agenda', hearing.agenda || '-'],
+              ['Jenis Sidang', hearing.jenis_sidang],
+              ['Sifat Sidang', TRANSPARANSI_LABELS[hearing.status_transparansi]],
+              ['Status', hearing.status_sidang || 'Terjadwal'],
             ].map(([k, v]) => (
               <div key={k} className="flex justify-between text-sm">
                 <span className="text-gray-500">{k}</span>
@@ -150,7 +167,7 @@ export default function HearingDetailPage() {
               </div>
             ))}
             {hearing.zoom_meeting && (
-              <div className="pt-3 border-t border-gray-100 space-y-2">
+              <div className="pt-3 border-t border-gray-100 space-y-2 mt-3">
                 <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">Zoom Meeting</p>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Meeting ID</span>

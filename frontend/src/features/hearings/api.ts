@@ -16,6 +16,12 @@ export const hearingsApi = {
     jam_sidang: string
     jenis_sidang: string
     status_transparansi: string
+    terdakwa?: string
+    pengadilan_pengirim?: string
+    kejaksaan_negeri?: string
+    lapas_rutan?: string
+    agenda?: string
+    status_sidang?: string
   }): Promise<Hearing> => {
     const res = await client.post('/hearings', data)
     return res.data

@@ -11,6 +11,12 @@ interface FormData {
   jam_sidang: string
   jenis_sidang: string
   status_transparansi: 'open' | 'closed'
+  terdakwa?: string
+  pengadilan_pengirim?: string
+  kejaksaan_negeri?: string
+  lapas_rutan?: string
+  agenda?: string
+  status_sidang: 'Terjadwal' | 'Selesai'
 }
 
 const JENIS_OPTIONS = [
@@ -20,7 +26,7 @@ const JENIS_OPTIONS = [
 
 export default function HearingCreatePage() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
-    defaultValues: { status_transparansi: 'open', jenis_sidang: 'Pidana Biasa' },
+    defaultValues: { status_transparansi: 'open', jenis_sidang: 'Pidana Biasa', status_sidang: 'Terjadwal' },
   })
   const [loading,    setLoading]    = useState(false)
   const [error,      setError]      = useState('')
@@ -74,45 +80,90 @@ export default function HearingCreatePage() {
               {errors.nomor_perkara && <p className="text-red-500 text-xs mt-1">{errors.nomor_perkara.message}</p>}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="form-label">Tanggal Sidang <span className="text-red-500">*</span></label>
-                <input
-                  type="date"
-                  {...register('tanggal_sidang', { required: 'Tanggal wajib diisi' })}
-                  className="form-input"
-                />
-                {errors.tanggal_sidang && <p className="text-red-500 text-xs mt-1">{errors.tanggal_sidang.message}</p>}
-              </div>
-              <div>
-                <label className="form-label">Jam Sidang <span className="text-red-500">*</span></label>
-                <input
-                  type="time"
-                  {...register('jam_sidang', { required: 'Jam wajib diisi' })}
-                  className="form-input"
-                />
-                {errors.jam_sidang && <p className="text-red-500 text-xs mt-1">{errors.jam_sidang.message}</p>}
+            {/* Pihak dan Instansi Terkait */}
+            <div className="pt-4 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-600 mb-3">Pihak dan Instansi Terkait</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="form-label">Terdakwa</label>
+                  <input {...register('terdakwa')} className="form-input" placeholder="Nama terdakwa..." />
+                </div>
+                <div>
+                  <label className="form-label">Pengadilan Negeri Pengirim (PN)</label>
+                  <input {...register('pengadilan_pengirim')} className="form-input" placeholder="Contoh: Pengadilan Negeri Jakarta Pusat" />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="form-label">Kejaksaan Negeri</label>
+                    <input {...register('kejaksaan_negeri')} className="form-input" placeholder="Contoh: Kejari Jakarta Pusat" />
+                  </div>
+                  <div>
+                    <label className="form-label">Lapas / Rutan</label>
+                    <input {...register('lapas_rutan')} className="form-input" placeholder="Contoh: Rutan Salemba" />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="form-label">Jenis Sidang</label>
-              <select {...register('jenis_sidang')} className="form-input">
-                {JENIS_OPTIONS.map(j => <option key={j} value={j}>{j}</option>)}
-              </select>
-            </div>
+            {/* Informasi Sidang */}
+            <div className="pt-4 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-600 mb-3">Jadwal dan Informasi Sidang</h4>
 
-            <div>
-              <label className="form-label">Status Transparansi</label>
-              <div className="flex gap-4 mt-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" value="open"   {...register('status_transparansi')} className="text-blue-600" />
-                  <span className="text-sm">🌐 Terbuka (Publik)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input type="radio" value="closed" {...register('status_transparansi')} className="text-blue-600" />
-                  <span className="text-sm">🔒 Tertutup</span>
-                </label>
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="form-label">Tanggal Sidang <span className="text-red-500">*</span></label>
+                  <input
+                    type="date"
+                    {...register('tanggal_sidang', { required: 'Tanggal wajib diisi' })}
+                    className="form-input"
+                  />
+                  {errors.tanggal_sidang && <p className="text-red-500 text-xs mt-1">{errors.tanggal_sidang.message}</p>}
+                </div>
+                <div>
+                  <label className="form-label">Jam Sidang <span className="text-red-500">*</span></label>
+                  <input
+                    type="time"
+                    {...register('jam_sidang', { required: 'Jam wajib diisi' })}
+                    className="form-input"
+                  />
+                  {errors.jam_sidang && <p className="text-red-500 text-xs mt-1">{errors.jam_sidang.message}</p>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="form-label">Jenis Sidang</label>
+                  <select {...register('jenis_sidang')} className="form-input">
+                    {JENIS_OPTIONS.map(j => <option key={j} value={j}>{j}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">Agenda</label>
+                  <input {...register('agenda')} className="form-input" placeholder="Contoh: Pengucapan Putusan" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-3">
+                <div>
+                  <label className="form-label">Status Sidang</label>
+                  <select {...register('status_sidang')} className="form-input">
+                    <option value="Terjadwal">Terjadwal</option>
+                    <option value="Selesai">Selesai</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="form-label">Sifat / Transparansi</label>
+                  <div className="flex gap-4 mt-2">
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value="open"   {...register('status_transparansi')} className="text-blue-600" />
+                      <span className="text-sm">🌐 Terbuka</span>
+                    </label>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input type="radio" value="closed" {...register('status_transparansi')} className="text-blue-600" />
+                      <span className="text-sm">🔒 Tertutup</span>
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
 

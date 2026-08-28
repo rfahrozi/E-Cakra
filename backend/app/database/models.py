@@ -52,6 +52,10 @@ class User(SQLModel, table=True):
     tasks: List["Task"] = Relationship(back_populates="assignee")
 
 
+class HearingStatus(str, Enum):
+    terjadwal = "Terjadwal"
+    selesai = "Selesai"
+
 class Hearing(SQLModel, table=True):
     __tablename__ = "hearings"
 
@@ -61,6 +65,15 @@ class Hearing(SQLModel, table=True):
     jam_sidang: time
     jenis_sidang: str = Field(max_length=100, default="Pidana Biasa")
     status_transparansi: TransparansiStatus = Field(default=TransparansiStatus.open)
+
+    # Detail Tambahan
+    terdakwa: Optional[str] = Field(default=None, max_length=200)
+    pengadilan_pengirim: Optional[str] = Field(default=None, max_length=200)
+    kejaksaan_negeri: Optional[str] = Field(default=None, max_length=200)
+    lapas_rutan: Optional[str] = Field(default=None, max_length=200)
+    agenda: Optional[str] = Field(default=None, max_length=255)
+    status_sidang: HearingStatus = Field(default=HearingStatus.terjadwal)
+
     created_by: Optional[str] = Field(default=None, foreign_key="users.id")
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
