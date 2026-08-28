@@ -6,10 +6,10 @@ import { authApi } from '@/features/auth/api'
 export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError]       = useState('')
-  const [loading, setLoading]   = useState(false)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
   const { setAuth } = useAuthStore()
-  const navigate    = useNavigate()
+  const navigate = useNavigate()
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -19,8 +19,8 @@ export default function LoginPage() {
       const data = await authApi.login(username, password)
       setAuth(data.user, data.access_token)
       navigate('/dashboard')
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? 'Login gagal. Periksa username dan password.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }; setError(e.response?.data?.detail ?? 'Login gagal. Periksa username dan password.')
     } finally {
       setLoading(false)
     }
@@ -44,7 +44,7 @@ export default function LoginPage() {
             <input
               type="text"
               value={username}
-              onChange={e => setUsername(e.target.value)}
+              onChange={(e) => setUsername(e.target.value)}
               className="form-input"
               placeholder="Masukkan username"
               required
@@ -56,7 +56,7 @@ export default function LoginPage() {
             <input
               type="password"
               value={password}
-              onChange={e => setPassword(e.target.value)}
+              onChange={(e) => setPassword(e.target.value)}
               className="form-input"
               placeholder="Masukkan password"
               required
@@ -69,11 +69,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="btn-primary w-full py-2.5 text-base"
-          >
+          <button type="submit" disabled={loading} className="btn-primary w-full py-2.5 text-base">
             {loading ? 'Memuat...' : 'Masuk'}
           </button>
         </form>

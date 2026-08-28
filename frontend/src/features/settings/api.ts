@@ -15,5 +15,5 @@ export const settingsApi = {
   update: async (key: string, value: string): Promise<SystemSetting> => {
     const res = await client.patch(`/settings/${key}`, { value })
     return res.data
-  }
+  },
 }

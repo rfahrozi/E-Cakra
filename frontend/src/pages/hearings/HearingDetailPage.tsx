@@ -7,14 +7,14 @@ import { Copy, CheckCheck, Users, Trash2, RefreshCw, AlertCircle } from 'lucide-
 import { TRANSPARANSI_LABELS, VALIDATION_LABELS, DECISION_LABELS } from '@/constants/routes'
 
 const VALIDATION_CLASS: Record<string, string> = {
-  valid:   'badge-valid',
-  review:  'badge-review',
+  valid: 'badge-valid',
+  review: 'badge-review',
   invalid: 'badge-invalid',
 }
 
 const DECISION_CLASS: Record<string, string> = {
-  admit:  'text-green-700 bg-green-50',
-  hold:   'text-yellow-700 bg-yellow-50',
+  admit: 'text-green-700 bg-green-50',
+  hold: 'text-yellow-700 bg-yellow-50',
   reject: 'text-red-700 bg-red-50',
 }
 
@@ -23,14 +23,14 @@ export default function HearingDetailPage() {
   const navigate = useNavigate()
   const { user } = useAuthStore()
 
-  const [hearing,  setHearing]  = useState<Hearing | null>(null)
+  const [hearing, setHearing] = useState<Hearing | null>(null)
   const [template, setTemplate] = useState<HearingTemplate | null>(null)
   const [participants, setParticipants] = useState<WaitingParticipant[]>([])
 
-  const [loading,  setLoading]  = useState(true)
-  const [copied,   setCopied]   = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [error,    setError]    = useState('')
+  const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   const loadData = useCallback(async () => {
@@ -40,13 +40,13 @@ export default function HearingDetailPage() {
       const [h, t, p] = await Promise.all([
         hearingsApi.get(id),
         hearingsApi.template(id),
-        hearingsApi.participants(id)
+        hearingsApi.participants(id),
       ])
       setHearing(h)
       setTemplate(t)
       setParticipants(p)
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? 'Gagal memuat detail sidang.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }; setError(e.response?.data?.detail ?? 'Gagal memuat detail sidang.')
     } finally {
       setLoading(false)
     }
@@ -66,21 +66,28 @@ export default function HearingDetailPage() {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Apakah Anda yakin ingin menghapus sidang ini beserta semua data pesertanya? Aksi ini tidak dapat dibatalkan.')) return
+    if (
+      !confirm(
+        'Apakah Anda yakin ingin menghapus sidang ini beserta semua data pesertanya? Aksi ini tidak dapat dibatalkan.'
+      )
+    )
+      return
 
     setDeleting(true)
     try {
       await hearingsApi.delete(id!)
       navigate('/hearings')
-    } catch (err: any) {
-      alert(err.response?.data?.detail ?? 'Gagal menghapus sidang.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }; alert(e.response?.data?.detail ?? 'Gagal menghapus sidang.')
       setDeleting(false)
     }
   }
 
   const handleAction = async (participantId: string, action: 'admit' | 'hold' | 'reject') => {
     if (action === 'reject') {
-      const confirmReject = window.confirm("Apakah Anda yakin ingin menolak peserta ini? Peserta akan dikeluarkan dari Waiting Room Zoom.")
+      const confirmReject = window.confirm(
+        'Apakah Anda yakin ingin menolak peserta ini? Peserta akan dikeluarkan dari Waiting Room Zoom.'
+      )
       if (!confirmReject) return
     }
 
@@ -88,8 +95,8 @@ export default function HearingDetailPage() {
     try {
       await participantsApi[action](participantId)
       await loadData()
-    } catch (err: any) {
-      alert(err.response?.data?.detail ?? 'Aksi gagal. Coba lagi.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }; alert(e.response?.data?.detail ?? 'Aksi gagal. Coba lagi.')
     } finally {
       setActionLoading(null)
     }
@@ -98,8 +105,8 @@ export default function HearingDetailPage() {
   if (loading && !hearing) return <div className="p-8 text-gray-500">Memuat...</div>
   if (!hearing) return <div className="p-8 text-red-600">Sidang tidak ditemukan.</div>
 
-  const pending = participants.filter(p => !p.operator_decision)
-  const decided = participants.filter(p =>  p.operator_decision)
+  const pending = participants.filter((p) => !p.operator_decision)
+  const decided = participants.filter((p) => p.operator_decision)
 
   return (
     <div className="p-8 max-w-6xl mx-auto">
@@ -137,7 +144,9 @@ export default function HearingDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <div className="lg:col-span-1 space-y-6">
           <div className="card space-y-3">
-            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">Detail Perkara Banding</h3>
+            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">
+              Detail Perkara Banding
+            </h3>
             {[
               ['Terdakwa', hearing.terdakwa || '-'],
               ['Pengadilan Negeri Pengirim (PN)', hearing.pengadilan_pengirim || '-'],
@@ -152,10 +161,15 @@ export default function HearingDetailPage() {
           </div>
 
           <div className="card space-y-3">
-            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">Informasi Sidang</h3>
+            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">
+              Informasi Sidang
+            </h3>
             {[
-              ['Tanggal', new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', { dateStyle: 'full' })],
-              ['Waktu', hearing.jam_sidang.slice(0,5) + ' WIB'],
+              [
+                'Tanggal',
+                new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', { dateStyle: 'full' }),
+              ],
+              ['Waktu', hearing.jam_sidang.slice(0, 5) + ' WIB'],
               ['Agenda', hearing.agenda || '-'],
               ['Jenis Sidang', hearing.jenis_sidang],
               ['Sifat Sidang', TRANSPARANSI_LABELS[hearing.status_transparansi]],
@@ -168,10 +182,14 @@ export default function HearingDetailPage() {
             ))}
             {hearing.zoom_meeting && (
               <div className="pt-3 border-t border-gray-100 space-y-2 mt-3">
-                <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">Zoom Meeting</p>
+                <p className="text-xs text-gray-400 uppercase font-semibold tracking-wide">
+                  Zoom Meeting
+                </p>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-500">Meeting ID</span>
-                  <span className="font-mono text-gray-800">{hearing.zoom_meeting.zoom_meeting_id}</span>
+                  <span className="font-mono text-gray-800">
+                    {hearing.zoom_meeting.zoom_meeting_id}
+                  </span>
                 </div>
               </div>
             )}
@@ -181,8 +199,19 @@ export default function HearingDetailPage() {
             <div className="flex items-center justify-between mb-3">
               <h3 className="font-semibold text-gray-800">Template Distribusi</h3>
               {template && (
-                <button onClick={handleCopy} className="btn-secondary flex items-center gap-2 text-sm py-1.5">
-                  {copied ? <><CheckCheck size={14} className="text-green-600" /> Tersalin!</> : <><Copy size={14} /> Salin</>}
+                <button
+                  onClick={handleCopy}
+                  className="btn-secondary flex items-center gap-2 text-sm py-1.5"
+                >
+                  {copied ? (
+                    <>
+                      <CheckCheck size={14} className="text-green-600" /> Tersalin!
+                    </>
+                  ) : (
+                    <>
+                      <Copy size={14} /> Salin
+                    </>
+                  )}
                 </button>
               )}
             </div>
@@ -203,7 +232,10 @@ export default function HearingDetailPage() {
                   {participants.length}
                 </span>
               </h3>
-              <button onClick={loadData} className="text-gray-400 hover:text-blue-600 p-1 rounded transition-colors">
+              <button
+                onClick={loadData}
+                className="text-gray-400 hover:text-blue-600 p-1 rounded transition-colors"
+              >
                 <RefreshCw size={16} />
               </button>
             </div>
@@ -223,8 +255,11 @@ export default function HearingDetailPage() {
                         Menunggu Keputusan ({pending.length})
                       </h4>
                       <div className="space-y-2">
-                        {pending.map(p => (
-                          <div key={p.id} className="flex flex-col sm:flex-row sm:items-center justify-between border border-yellow-200 bg-yellow-50/30 rounded-lg p-3 gap-3">
+                        {pending.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex flex-col sm:flex-row sm:items-center justify-between border border-yellow-200 bg-yellow-50/30 rounded-lg p-3 gap-3"
+                          >
                             <div>
                               <p className="font-medium text-gray-900 text-sm">{p.display_name}</p>
                               <div className="flex items-center gap-2 mt-1">
@@ -237,9 +272,27 @@ export default function HearingDetailPage() {
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <button onClick={() => handleAction(p.id, 'admit')} disabled={!!actionLoading} className="btn-success text-xs px-2.5 py-1">Admit</button>
-                              <button onClick={() => handleAction(p.id, 'hold')} disabled={!!actionLoading} className="btn-warning text-xs px-2.5 py-1">Hold</button>
-                              <button onClick={() => handleAction(p.id, 'reject')} disabled={!!actionLoading} className="btn-danger text-xs px-2.5 py-1">Reject</button>
+                              <button
+                                onClick={() => handleAction(p.id, 'admit')}
+                                disabled={!!actionLoading}
+                                className="btn-success text-xs px-2.5 py-1"
+                              >
+                                Admit
+                              </button>
+                              <button
+                                onClick={() => handleAction(p.id, 'hold')}
+                                disabled={!!actionLoading}
+                                className="btn-warning text-xs px-2.5 py-1"
+                              >
+                                Hold
+                              </button>
+                              <button
+                                onClick={() => handleAction(p.id, 'reject')}
+                                disabled={!!actionLoading}
+                                className="btn-danger text-xs px-2.5 py-1"
+                              >
+                                Reject
+                              </button>
                             </div>
                           </div>
                         ))}
@@ -254,14 +307,21 @@ export default function HearingDetailPage() {
                         Sudah Diputuskan ({decided.length})
                       </h4>
                       <div className="space-y-2">
-                        {decided.map(p => (
-                          <div key={p.id} className="flex items-center justify-between border border-gray-100 bg-gray-50 rounded-lg p-2.5">
-                            <p className="text-sm font-medium text-gray-700 truncate mr-3">{p.display_name}</p>
+                        {decided.map((p) => (
+                          <div
+                            key={p.id}
+                            className="flex items-center justify-between border border-gray-100 bg-gray-50 rounded-lg p-2.5"
+                          >
+                            <p className="text-sm font-medium text-gray-700 truncate mr-3">
+                              {p.display_name}
+                            </p>
                             <div className="flex items-center gap-2 shrink-0">
                               <span className={VALIDATION_CLASS[p.validation_status]}>
                                 {VALIDATION_LABELS[p.validation_status]}
                               </span>
-                              <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${DECISION_CLASS[p.operator_decision!]}`}>
+                              <span
+                                className={`text-xs font-semibold px-2 py-0.5 rounded-full ${DECISION_CLASS[p.operator_decision!]}`}
+                              >
                                 {DECISION_LABELS[p.operator_decision!]}
                               </span>
                             </div>

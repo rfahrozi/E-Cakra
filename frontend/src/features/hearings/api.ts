@@ -40,7 +40,7 @@ export const hearingsApi = {
 }
 
 export const participantsApi = {
-  admit:  async (id: string) => (await client.post(`/participants/${id}/admit`)).data,
-  hold:   async (id: string) => (await client.post(`/participants/${id}/hold`)).data,
+  admit: async (id: string) => (await client.post(`/participants/${id}/admit`)).data,
+  hold: async (id: string) => (await client.post(`/participants/${id}/hold`)).data,
   reject: async (id: string) => (await client.post(`/participants/${id}/reject`)).data,
 }

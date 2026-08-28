@@ -5,28 +5,33 @@ import { Save, AlertCircle, CheckCircle } from 'lucide-react'
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<SystemSetting[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [saving, setSaving]     = useState<string | null>(null) // Menyimpan key yang sedang di-save
-  const [error, setError]       = useState('')
-  const [success, setSuccess]   = useState('')
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState<string | null>(null) // Menyimpan key yang sedang di-save
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   // State untuk form local per key
   const [formValues, setFormValues] = useState<Record<string, string>>({})
 
   const loadSettings = () => {
     setLoading(true)
-    settingsApi.list()
-      .then(data => {
+    settingsApi
+      .list()
+      .then((data) => {
         setSettings(data)
         const initialValues: Record<string, string> = {}
-        data.forEach(s => { initialValues[s.key] = s.value })
+        data.forEach((s) => {
+          initialValues[s.key] = s.value
+        })
         setFormValues(initialValues)
       })
       .catch(() => setError('Gagal memuat pengaturan sistem.'))
       .finally(() => setLoading(false))
   }
 
-  useEffect(() => { loadSettings() }, [])
+  useEffect(() => {
+    loadSettings()
+  }, [])
 
   const handleUpdate = async (key: string) => {
     setSaving(key)
@@ -36,8 +41,9 @@ export default function SettingsPage() {
       await settingsApi.update(key, formValues[key])
       setSuccess(`Pengaturan "${key}" berhasil disimpan.`)
       setTimeout(() => setSuccess(''), 3000)
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? `Gagal menyimpan "${key}".`)
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }
+      setError(e.response?.data?.detail ?? `Gagal menyimpan "${key}".`)
     } finally {
       setSaving(null)
     }
@@ -73,10 +79,15 @@ export default function SettingsPage() {
 
         {!loading && settings.length > 0 && (
           <div className="divide-y divide-gray-100">
-            {settings.map(setting => (
-              <div key={setting.key} className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center hover:bg-gray-50 transition-colors">
+            {settings.map((setting) => (
+              <div
+                key={setting.key}
+                className="p-6 flex flex-col md:flex-row gap-6 items-start md:items-center hover:bg-gray-50 transition-colors"
+              >
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-800 font-mono text-sm mb-1">{setting.key}</h3>
+                  <h3 className="font-semibold text-gray-800 font-mono text-sm mb-1">
+                    {setting.key}
+                  </h3>
                   {setting.description && (
                     <p className="text-sm text-gray-500">{setting.description}</p>
                   )}
@@ -89,7 +100,9 @@ export default function SettingsPage() {
                   <input
                     type="text"
                     value={formValues[setting.key] ?? ''}
-                    onChange={(e) => setFormValues(prev => ({ ...prev, [setting.key]: e.target.value }))}
+                    onChange={(e) =>
+                      setFormValues((prev) => ({ ...prev, [setting.key]: e.target.value }))
+                    }
                     className="form-input bg-white"
                   />
                   <button

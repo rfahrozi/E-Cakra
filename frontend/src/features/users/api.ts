@@ -24,5 +24,5 @@ export const usersApi = {
   },
   delete: async (id: string): Promise<void> => {
     await client.delete(`/users/${id}`)
-  }
+  },
 }

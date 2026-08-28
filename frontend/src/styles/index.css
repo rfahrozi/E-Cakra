@@ -3,7 +3,9 @@
 @tailwind utilities;
 
 @layer base {
-  * { box-sizing: border-box; }
+  * {
+    box-sizing: border-box;
+  }
   body {
     @apply bg-gray-50 text-gray-900 font-sans;
     font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;

@@ -6,38 +6,36 @@ import { VALIDATION_LABELS, DECISION_LABELS } from '@/constants/routes'
 import { RefreshCw, AlertCircle } from 'lucide-react'
 
 const VALIDATION_CLASS: Record<string, string> = {
-  valid:   'badge-valid',
-  review:  'badge-review',
+  valid: 'badge-valid',
+  review: 'badge-review',
   invalid: 'badge-invalid',
 }
 
 const DECISION_CLASS: Record<string, string> = {
-  admit:  'text-green-700 bg-green-50',
-  hold:   'text-yellow-700 bg-yellow-50',
+  admit: 'text-green-700 bg-green-50',
+  hold: 'text-yellow-700 bg-yellow-50',
   reject: 'text-red-700 bg-red-50',
 }
 
 export default function WaitingRoomPage() {
   const { id } = useParams<{ id: string }>()
-  const [hearing,       setHearing]       = useState<Hearing | null>(null)
-  const [participants,  setParticipants]  = useState<WaitingParticipant[]>([])
-  const [loading,       setLoading]       = useState(true)
-  const [error,         setError]         = useState('')
+  const [hearing, setHearing] = useState<Hearing | null>(null)
+  const [participants, setParticipants] = useState<WaitingParticipant[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
   const [actionLoading, setActionLoading] = useState<string | null>(null)
-  const [actionError,   setActionError]   = useState('')
+  const [actionError, setActionError] = useState('')
 
   const loadData = useCallback(async () => {
     if (!id) return
     setError('')
     try {
-      const [h, p] = await Promise.all([
-        hearingsApi.get(id),
-        hearingsApi.participants(id),
-      ])
+      const [h, p] = await Promise.all([hearingsApi.get(id), hearingsApi.participants(id)])
       setHearing(h)
       setParticipants(p)
-    } catch (err: any) {
-      setError(err.response?.data?.detail ?? 'Gagal memuat data waiting room.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }
+      setError(e.response?.data?.detail ?? 'Gagal memuat data waiting room.')
     } finally {
       setLoading(false)
     }
@@ -51,7 +49,9 @@ export default function WaitingRoomPage() {
 
   const handleAction = async (participantId: string, action: 'admit' | 'hold' | 'reject') => {
     if (action === 'reject') {
-      const confirmReject = window.confirm("Apakah Anda yakin ingin menolak peserta ini? Peserta akan dikeluarkan dari Waiting Room Zoom.")
+      const confirmReject = window.confirm(
+        'Apakah Anda yakin ingin menolak peserta ini? Peserta akan dikeluarkan dari Waiting Room Zoom.'
+      )
       if (!confirmReject) return
     }
 
@@ -60,15 +60,16 @@ export default function WaitingRoomPage() {
     try {
       await participantsApi[action](participantId)
       await loadData()
-    } catch (err: any) {
-      setActionError(err.response?.data?.detail ?? 'Aksi gagal. Coba lagi.')
+    } catch (err: unknown) {
+      const e = err as { response?: { data?: { detail?: string } } }
+      setActionError(e.response?.data?.detail ?? 'Aksi gagal. Coba lagi.')
     } finally {
       setActionLoading(null)
     }
   }
 
   const pending = participants.filter((p: WaitingParticipant) => !p.operator_decision)
-  const decided = participants.filter((p: WaitingParticipant) =>  p.operator_decision)
+  const decided = participants.filter((p: WaitingParticipant) => p.operator_decision)
 
   return (
     <div className="p-8">
@@ -118,8 +119,11 @@ export default function WaitingRoomPage() {
               <p className="text-gray-400 text-sm">Tidak ada peserta yang menunggu.</p>
             ) : (
               <div className="space-y-3">
-                {pending.map(p => (
-                  <div key={p.id} className="flex items-center justify-between border border-gray-100 rounded-lg px-4 py-3 bg-gray-50">
+                {pending.map((p) => (
+                  <div
+                    key={p.id}
+                    className="flex items-center justify-between border border-gray-100 rounded-lg px-4 py-3 bg-gray-50"
+                  >
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-gray-800 text-sm truncate">{p.display_name}</p>
                       <p className="text-gray-400 text-xs mt-0.5">
@@ -170,7 +174,7 @@ export default function WaitingRoomPage() {
                 </span>
               </h3>
               <div className="divide-y divide-gray-100">
-                {decided.map(p => (
+                {decided.map((p) => (
                   <div key={p.id} className="flex items-center justify-between py-2.5">
                     <div>
                       <p className="text-sm text-gray-700">{p.display_name}</p>
@@ -179,7 +183,9 @@ export default function WaitingRoomPage() {
                       <span className={VALIDATION_CLASS[p.validation_status]}>
                         {VALIDATION_LABELS[p.validation_status]}
                       </span>
-                      <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${DECISION_CLASS[p.operator_decision!]}`}>
+                      <span
+                        className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${DECISION_CLASS[p.operator_decision!]}`}
+                      >
                         {DECISION_LABELS[p.operator_decision!]}
                       </span>
                     </div>

@@ -2,16 +2,23 @@ import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/app.store'
 import { authApi } from '@/features/auth/api'
 import {
-  LayoutDashboard, Scale, Users, ClipboardList, LogOut, FileText, UserCog, Settings
+  LayoutDashboard,
+  Scale,
+  
+  ClipboardList,
+  LogOut,
+  FileText,
+  UserCog,
+  Settings,
 } from 'lucide-react'
 
 const navItems = [
-  { to: '/dashboard',       label: 'Dashboard',     icon: LayoutDashboard, adminOnly: false },
-  { to: '/hearings',        label: 'Daftar Sidang', icon: FileText,        adminOnly: false },
-  { to: '/hearings/new',    label: 'Buat Sidang',   icon: Scale,           adminOnly: false },
-  { to: '/audit-logs',      label: 'Audit Log',     icon: ClipboardList,   adminOnly: false },
-  { to: '/users',           label: 'Pengguna',      icon: UserCog,         adminOnly: true },
-  { to: '/settings',        label: 'Pengaturan',    icon: Settings,        adminOnly: true },
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, adminOnly: false },
+  { to: '/hearings', label: 'Daftar Sidang', icon: FileText, adminOnly: false },
+  { to: '/hearings/new', label: 'Buat Sidang', icon: Scale, adminOnly: false },
+  { to: '/audit-logs', label: 'Audit Log', icon: ClipboardList, adminOnly: false },
+  { to: '/users', label: 'Pengguna', icon: UserCog, adminOnly: true },
+  { to: '/settings', label: 'Pengaturan', icon: Settings, adminOnly: true },
 ]
 
 export default function MainLayout() {
@@ -19,7 +26,9 @@ export default function MainLayout() {
   const navigate = useNavigate()
 
   const handleLogout = async () => {
-    try { await authApi.logout() } catch {}
+    try {
+      await authApi.logout()
+    } catch (err) { console.error(err) }
     clearAuth()
     navigate('/login')
   }
@@ -37,23 +46,23 @@ export default function MainLayout() {
         {/* Nav */}
         <nav className="flex-1 px-3 py-4 space-y-1">
           {navItems
-            .filter(item => !item.adminOnly || user?.role === 'admin')
+            .filter((item) => !item.adminOnly || user?.role === 'admin')
             .map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive
-                    ? 'bg-blue-700 text-white'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                }`
-              }
-            >
-              <Icon size={18} />
-              {label}
-            </NavLink>
-          ))}
+              <NavLink
+                key={to}
+                to={to}
+                className={({ isActive }) =>
+                  `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
+                    isActive
+                      ? 'bg-blue-700 text-white'
+                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
+                  }`
+                }
+              >
+                <Icon size={18} />
+                {label}
+              </NavLink>
+            ))}
         </nav>
 
         {/* User info */}

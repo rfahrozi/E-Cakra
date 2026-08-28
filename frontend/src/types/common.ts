@@ -8,6 +8,7 @@ export interface User {
   nama: string
   username: string
   role: UserRole
+  is_active?: boolean
 }
 
 export interface Hearing {

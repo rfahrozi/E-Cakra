@@ -7,8 +7,8 @@ import { TRANSPARANSI_LABELS } from '@/constants/routes'
 
 export default function HearingListPage() {
   const [hearings, setHearings] = useState<Hearing[]>([])
-  const [loading, setLoading]   = useState(true)
-  const [error, setError]       = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   // States untuk filter
   const [searchTerm, setSearchTerm] = useState('')
@@ -18,17 +18,19 @@ export default function HearingListPage() {
 
   useEffect(() => {
     setLoading(true)
-    hearingsApi.list()
+    hearingsApi
+      .list()
       .then(setHearings)
       .catch(() => setError('Gagal memuat daftar sidang'))
       .finally(() => setLoading(false))
   }, [])
 
   // Logika filter
-  const filteredHearings = hearings.filter(h => {
-    const matchSearch = h.nomor_perkara.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        h.jenis_sidang.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchDate   = dateFilter ? h.tanggal_sidang === dateFilter : true
+  const filteredHearings = hearings.filter((h) => {
+    const matchSearch =
+      h.nomor_perkara.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      h.jenis_sidang.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchDate = dateFilter ? h.tanggal_sidang === dateFilter : true
     return matchSearch && matchDate
   })
 
@@ -91,15 +93,25 @@ export default function HearingListPage() {
           <table className="w-full text-left border-collapse">
             <thead className="bg-gray-50 border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tanggal & Waktu</th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Nomor Perkara</th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Jenis Sidang</th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Zoom Meeting</th>
-                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Aksi</th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Tanggal & Waktu
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Nomor Perkara
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Jenis Sidang
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  Zoom Meeting
+                </th>
+                <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredHearings.map(hearing => (
+              {filteredHearings.map((hearing) => (
                 <tr
                   key={hearing.id}
                   onClick={() => navigate(`/hearings/${hearing.id}`)}
@@ -107,18 +119,30 @@ export default function HearingListPage() {
                 >
                   <td className="px-6 py-4 whitespace-nowrap">
                     <p className="text-sm font-medium text-gray-900">
-                      {new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      {new Date(hearing.tanggal_sidang).toLocaleDateString('id-ID', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
                     </p>
-                    <p className="text-xs text-gray-500 mt-0.5">{hearing.jam_sidang.slice(0, 5)} WIB</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      {hearing.jam_sidang.slice(0, 5)} WIB
+                    </p>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="text-sm font-semibold text-blue-700 group-hover:underline">{hearing.nomor_perkara}</p>
-                    <span className={`inline-block mt-1 ${hearing.status_transparansi === 'open' ? 'badge-open' : 'badge-closed'}`}>
+                    <p className="text-sm font-semibold text-blue-700 group-hover:underline">
+                      {hearing.nomor_perkara}
+                    </p>
+                    <span
+                      className={`inline-block mt-1 ${hearing.status_transparansi === 'open' ? 'badge-open' : 'badge-closed'}`}
+                    >
                       {TRANSPARANSI_LABELS[hearing.status_transparansi]}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <span className="text-sm text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">{hearing.jenis_sidang}</span>
+                    <span className="text-sm text-gray-700 bg-gray-100 px-2.5 py-1 rounded-md">
+                      {hearing.jenis_sidang}
+                    </span>
                   </td>
                   <td className="px-6 py-4">
                     {hearing.zoom_meeting ? (
@@ -133,7 +157,10 @@ export default function HearingListPage() {
                     )}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <ChevronRight size={20} className="text-gray-400 group-hover:text-blue-600 inline-block transition-colors" />
+                    <ChevronRight
+                      size={20}
+                      className="text-gray-400 group-hover:text-blue-600 inline-block transition-colors"
+                    />
                   </td>
                 </tr>
               ))}
