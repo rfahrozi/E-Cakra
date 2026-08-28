@@ -1,0 +1,32 @@
+@import './variables.css';
+
+/* =============================================
+   E-CAKRA — Theme Styles
+   ============================================= */
+
+/* Button utama */
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #fff;
+  padding: var(--space-sm) var(--space-md);
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover { background-color: var(--color-primary-hover); }
+
+/* Status badge */
+.badge-valid   { background: #dcfce7; color: var(--color-valid);   padding: 2px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+.badge-review  { background: #fef9c3; color: var(--color-review);  padding: 2px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+.badge-invalid { background: #fee2e2; color: var(--color-invalid);  padding: 2px 10px; border-radius: 99px; font-size: 0.8rem; font-weight: 600; }
+
+/* Card */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+}

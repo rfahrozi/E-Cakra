@@ -1,0 +1,69 @@
+# docker-compose.dev.yml — Development (hot reload, no build frontend)
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ecakra_db_dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecakra}
+      POSTGRES_USER: ${POSTGRES_USER:-ecakra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecakra_dev_2026}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    ports:
+      - "5433:5432"   # pakai 5433 agar tidak bentrok dengan PostgreSQL lokal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecakra}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecakra_dev_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: ecakra_backend_dev
+    restart: unless-stopped
+    env_file:
+      - .env.dev
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ecakra}:${POSTGRES_PASSWORD:-ecakra_dev_2026}@db:5432/${POSTGRES_DB:-ecakra}
+      APP_ENV: development
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app   # hot reload — edit langsung terlihat
+    networks:
+      - ecakra_dev_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.dev
+    container_name: ecakra_frontend_dev
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    ports:
+      - "3000:3000"    # akses langsung tanpa nginx
+    volumes:
+      - ./frontend:/app       # hot reload
+      - /app/node_modules     # preserve node_modules di container
+    networks:
+      - ecakra_dev_net
+
+volumes:
+  postgres_dev_data:
+
+networks:
+  ecakra_dev_net:
+    driver: bridge

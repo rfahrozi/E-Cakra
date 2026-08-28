@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: ecakra_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ecakra}
+      POSTGRES_USER: ${POSTGRES_USER:-ecakra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ecakra_secret}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ecakra}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - ecakra_net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ecakra_backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://${POSTGRES_USER:-ecakra}:${POSTGRES_PASSWORD:-ecakra_secret}@db:5432/${POSTGRES_DB:-ecakra}
+      APP_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    networks:
+      - ecakra_net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: ecakra_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    networks:
+      - ecakra_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: ecakra_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - ecakra_net
+
+volumes:
+  postgres_data:
+
+networks:
+  ecakra_net:
+    driver: bridge
