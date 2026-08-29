@@ -76,6 +76,31 @@ def seed_default_settings(session: Session):
             "value": "",
             "description": "Stream Key rahasia dari YouTube Live untuk Zoom Custom Livestream (F-019). Isi dari YouTube Studio → Go Live → Stream Key.",
         },
+        {
+            "key": "list_pengadilan_negeri",
+            "value": "Pengadilan Negeri Tanjungpinang,Pengadilan Negeri Batam,Pengadilan Negeri Tanjung Balai Karimun,Pengadilan Negeri Natuna",
+            "description": "Daftar Pengadilan Negeri pengirim (pisahkan dengan koma)",
+        },
+        {
+            "key": "list_kejaksaan_negeri",
+            "value": "Kejaksaan Negeri Tanjungpinang,Kejaksaan Negeri Batam,Kejaksaan Negeri Bintan,Kejaksaan Negeri Lingga,Kejaksaan Negeri Karimun,Kejaksaan Negeri Natuna,Kejaksaan Negeri Kepulauan Anambas,Cabang Kejaksaan Negeri Karimun di Moro,Cabang Kejaksaan Negeri Karimun di Tanjungbatu",
+            "description": "Daftar Kejaksaan Negeri dan Cabangnya (pisahkan dengan koma)",
+        },
+        {
+            "key": "list_rutan",
+            "value": "Rutan Kelas I Tanjungpinang,Rutan Kelas IIA Batam,Rutan Kelas IIB Tanjung Balai Karimun",
+            "description": "Daftar Lapas atau Rutan (pisahkan dengan koma)",
+        },
+        {
+            "key": "list_hakim",
+            "value": "Drs. ARIFIN S.H. M.Hum.,Dr ZULFAHMI S.H. M.Hum.,BAGUS IRAWAN S.H. M.H,WENDRA RAIS S.H. M.H,ELIWARTI S.H. M.H.,DAHLIA PANJAITAN S.H.,MORGAN SIMANJUNTAK S.H. M.Hum.,ELFIAN S.H. M.H.,ESTIONO S.H. M.H.,Dr. H. M. SURYADI S.H. M.H.,RUDY SUDIANTO S.H. M.M.",
+            "description": "Daftar Hakim (Ketua / Anggota / Ad Hoc) dipisahkan koma",
+        },
+        {
+            "key": "list_panitera",
+            "value": "SAPTA PUTRA S.H.,NURLAILI S.H. M.H.,AGUSMAN S.H. M.H.,SYAIFUL ISLAMI S.H.,SUPRIADI S.H.",
+            "description": "Daftar Panitera / Panitera Muda / Pengganti dipisahkan koma",
+        },
     ]
 
     for s in settings_to_seed:

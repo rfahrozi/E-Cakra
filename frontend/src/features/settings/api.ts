@@ -12,6 +12,10 @@ export const settingsApi = {
     const res = await client.get('/settings')
     return res.data
   },
+  getGeneral: async (): Promise<Record<string, string>> => {
+    const res = await client.get('/settings/general')
+    return res.data
+  },
   update: async (key: string, value: string): Promise<SystemSetting> => {
     const res = await client.patch(`/settings/${key}`, { value })
     return res.data

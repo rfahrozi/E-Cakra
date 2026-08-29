@@ -40,6 +40,30 @@ def list_settings(
     settings = session.exec(select(SystemSettings).order_by(SystemSettings.key)).all()
     return settings
 
+@router.get("/general", response_model=dict)
+def get_general_settings(
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Ambil konfigurasi umum (seperti list instansi) yang boleh dibaca oleh semua role.
+    Hanya mengembalikan key yang terdaftar di whitelist.
+    """
+    allowed_keys = [
+        "list_pengadilan_negeri",
+        "list_kejaksaan_negeri",
+        "list_rutan",
+        "list_hakim",
+        "list_panitera",
+    ]
+
+    result = {}
+    for key in allowed_keys:
+        setting = session.get(SystemSettings, key)
+        result[key] = setting.value if setting else ""
+
+    return result
+
 @router.patch("/{key}", response_model=SettingOut)
 def update_setting(
     key: str,

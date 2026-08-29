@@ -24,9 +24,13 @@ export interface Hearing {
   lapas_rutan?: string | null
   agenda?: string | null
   status_sidang?: string
+  majelis_hakim?: string | null
+  panitera_pengganti?: string | null
   created_by: string | null
   created_at: string
   zoom_meeting: ZoomMeetingBrief | null
+  zoom_status?: string
+  zoom_error?: string | null
 }
 
 export interface ZoomMeetingBrief {

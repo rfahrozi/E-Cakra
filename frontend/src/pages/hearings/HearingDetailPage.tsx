@@ -170,6 +170,28 @@ export default function HearingDetailPage() {
 
           <div className="card space-y-3">
             <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">
+              Susunan Persidangan
+            </h3>
+            <div className="flex flex-col text-sm mb-2">
+              <span className="text-gray-500 mb-0.5">Majelis Hakim</span>
+              {hearing.majelis_hakim ? (
+                <ul className="list-disc pl-4 text-gray-800 font-medium">
+                  {hearing.majelis_hakim.split(',').map((hakim, idx) => (
+                    <li key={idx}>{hakim.trim()}</li>
+                  ))}
+                </ul>
+              ) : (
+                <span className="font-medium text-gray-800">-</span>
+              )}
+            </div>
+            <div className="flex flex-col text-sm mb-2">
+              <span className="text-gray-500 mb-0.5">Panitera Pengganti</span>
+              <span className="font-medium text-gray-800">{hearing.panitera_pengganti || '-'}</span>
+            </div>
+          </div>
+
+          <div className="card space-y-3">
+            <h3 className="font-semibold text-gray-800 border-b border-gray-100 pb-2 mb-3">
               Informasi Sidang
             </h3>
             {[

@@ -28,6 +28,8 @@ class HearingCreate(BaseModel):
     lapas_rutan: Optional[str] = None
     agenda: Optional[str] = None
     status_sidang: str = "Terjadwal"
+    majelis_hakim: Optional[str] = None
+    panitera_pengganti: Optional[str] = None
 
     @field_validator("nomor_perkara")
     @classmethod
@@ -49,6 +51,8 @@ class HearingUpdate(BaseModel):
     lapas_rutan: Optional[str] = None
     agenda: Optional[str] = None
     status_sidang: Optional[str] = None
+    majelis_hakim: Optional[str] = None
+    panitera_pengganti: Optional[str] = None
 
 
 class HearingOut(BaseModel):
@@ -65,6 +69,8 @@ class HearingOut(BaseModel):
     lapas_rutan: Optional[str]
     agenda: Optional[str]
     status_sidang: str
+    majelis_hakim: Optional[str] = None
+    panitera_pengganti: Optional[str] = None
 
     created_by: Optional[str]
     created_at: datetime
@@ -119,6 +125,8 @@ def hearing_to_out(h: Hearing, zm: Optional[ZoomMeeting] = None, z_status: str =
         lapas_rutan=h.lapas_rutan,
         agenda=h.agenda,
         status_sidang=h.status_sidang.value if hasattr(h.status_sidang, 'value') else h.status_sidang,
+        majelis_hakim=h.majelis_hakim,
+        panitera_pengganti=h.panitera_pengganti,
         created_by=h.created_by,
         created_at=h.created_at,
         zoom_meeting={
@@ -157,6 +165,8 @@ async def create_hearing(
         lapas_rutan=body.lapas_rutan,
         agenda=body.agenda,
         status_sidang=body.status_sidang,
+        majelis_hakim=body.majelis_hakim,
+        panitera_pengganti=body.panitera_pengganti,
         created_by=current_user.id,
     )
     session.add(hearing)
@@ -325,6 +335,10 @@ Terdakwa            : {hearing.terdakwa or '-'}
 Pengadilan Pengirim : {hearing.pengadilan_pengirim or '-'}
 Kejaksaan Negeri    : {hearing.kejaksaan_negeri or '-'}
 Lapas / Rutan       : {hearing.lapas_rutan or '-'}
+
+[ Susunan Persidangan ]
+Majelis Hakim       : {hearing.majelis_hakim or '-'}
+Panitera Pengganti  : {hearing.panitera_pengganti or '-'}
 
 [ Informasi Sidang ]
 Tanggal       : {tanggal_str}

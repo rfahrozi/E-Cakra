@@ -13,6 +13,8 @@ export interface HearingUpdateData {
   lapas_rutan?: string
   agenda?: string
   status_sidang?: string
+  majelis_hakim?: string
+  panitera_pengganti?: string
 }
 
 export const hearingsApi = {
@@ -36,6 +38,8 @@ export const hearingsApi = {
     lapas_rutan?: string
     agenda?: string
     status_sidang?: string
+    majelis_hakim?: string
+    panitera_pengganti?: string
   }): Promise<Hearing> => {
     const res = await client.post('/hearings', data)
     return res.data

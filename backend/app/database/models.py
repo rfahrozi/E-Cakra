@@ -72,6 +72,11 @@ class Hearing(SQLModel, table=True):
     kejaksaan_negeri: Optional[str] = Field(default=None, max_length=200)
     lapas_rutan: Optional[str] = Field(default=None, max_length=200)
     agenda: Optional[str] = Field(default=None, max_length=255)
+
+    # Majelis Hakim dan Panitera Pengganti
+    majelis_hakim: Optional[str] = Field(default=None, max_length=500)
+    panitera_pengganti: Optional[str] = Field(default=None, max_length=200)
+
     status_sidang: HearingStatus = Field(default=HearingStatus.terjadwal)
 
     created_by: Optional[str] = Field(default=None, foreign_key="users.id")

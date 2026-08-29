@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { hearingsApi } from '@/features/hearings/api'
+import { settingsApi } from '@/features/settings/api'
 import type { HearingTemplate } from '@/types/common'
 import { Copy, CheckCheck, Scale } from 'lucide-react'
 
@@ -17,17 +18,14 @@ interface FormData {
   lapas_rutan?: string
   agenda?: string
   status_sidang: 'Terjadwal' | 'Selesai'
+  panitera_pengganti?: string
 }
 
 const JENIS_OPTIONS = [
   'Pidana Biasa',
   'Pidana Khusus',
   'Pidana Anak',
-  'Perdata',
-  'Perdata Khusus',
-  'Tata Usaha Negara',
-  'Agama',
-  'Lainnya',
+  'Pidana Khusus Tipikor',
 ]
 
 export default function HearingCreatePage() {
@@ -47,13 +45,47 @@ export default function HearingCreatePage() {
   const [template, setTemplate] = useState<HearingTemplate | null>(null)
   const [hearingId, setHearingId] = useState('')
   const [copied, setCopied] = useState(false)
+
+  // State untuk dropdown dinamis dari DB
+  const [pnOptions, setPnOptions] = useState<string[]>([''])
+  const [kejariOptions, setKejariOptions] = useState<string[]>([''])
+  const [rutanOptions, setRutanOptions] = useState<string[]>([''])
+  const [hakimOptions, setHakimOptions] = useState<string[]>([])
+  const [paniteraOptions, setPaniteraOptions] = useState<string[]>([''])
+
+  // Multi-select custom untuk Majelis Hakim
+  const [selectedHakim, setSelectedHakim] = useState<string[]>([])
+  const [hakimDropdownOpen, setHakimDropdownOpen] = useState(false)
+
   const navigate = useNavigate()
+
+  useEffect(() => {
+    settingsApi.getGeneral()
+      .then(settings => {
+        if (settings.list_pengadilan_negeri) setPnOptions(['', ...settings.list_pengadilan_negeri.split(',')])
+        if (settings.list_kejaksaan_negeri) setKejariOptions(['', ...settings.list_kejaksaan_negeri.split(',')])
+        if (settings.list_rutan) setRutanOptions(['', ...settings.list_rutan.split(',')])
+        if (settings.list_hakim) setHakimOptions(settings.list_hakim.split(','))
+        if (settings.list_panitera) setPaniteraOptions(['', ...settings.list_panitera.split(',')])
+      })
+      .catch(err => console.error("Gagal load opsi dropdown", err))
+  }, [])
+
+  const toggleHakim = (hakim: string) => {
+    setSelectedHakim(prev =>
+      prev.includes(hakim) ? prev.filter(h => h !== hakim) : [...prev, hakim]
+    )
+  }
 
   const onSubmit = async (data: FormData) => {
     setError('')
     setLoading(true)
     try {
-      const hearing = await hearingsApi.create(data)
+      const finalData = {
+        ...data,
+        majelis_hakim: selectedHakim.length > 0 ? selectedHakim.join(', ') : undefined
+      }
+      const hearing = await hearingsApi.create(finalData)
       setHearingId(hearing.id)
       const tmpl = await hearingsApi.template(hearing.id)
       setTemplate(tmpl)
@@ -116,29 +148,99 @@ export default function HearingCreatePage() {
                 </div>
                 <div>
                   <label className="form-label">Pengadilan Negeri Pengirim (PN)</label>
-                  <input
+                  <select
                     {...register('pengadilan_pengirim')}
                     className="form-input"
-                    placeholder="Contoh: Pengadilan Negeri Jakarta Pusat"
-                  />
+                  >
+                    {pnOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt || '-- Pilih Pengadilan Negeri --'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="form-label">Kejaksaan Negeri</label>
-                    <input
+                    <select
                       {...register('kejaksaan_negeri')}
                       className="form-input"
-                      placeholder="Contoh: Kejari Jakarta Pusat"
-                    />
+                    >
+                      {kejariOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt || '-- Pilih Kejaksaan --'}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                   <div>
                     <label className="form-label">Lapas / Rutan</label>
-                    <input
+                    <select
                       {...register('lapas_rutan')}
                       className="form-input"
-                      placeholder="Contoh: Rutan Salemba"
-                    />
+                    >
+                      {rutanOptions.map((opt) => (
+                        <option key={opt} value={opt}>
+                          {opt || '-- Pilih Lapas/Rutan --'}
+                        </option>
+                      ))}
+                    </select>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Susunan Persidangan */}
+            <div className="pt-4 border-t border-slate-100">
+              <h4 className="text-sm font-bold text-slate-600 mb-3">Susunan Persidangan</h4>
+              <div className="space-y-3">
+                <div>
+                  <label className="form-label">Majelis Hakim (Pilih satu atau lebih)</label>
+                  <div className="relative">
+                    <div
+                      className="form-input cursor-pointer min-h-[42px] flex items-center"
+                      onClick={() => setHakimDropdownOpen(!hakimDropdownOpen)}
+                    >
+                      <span className={selectedHakim.length ? "text-gray-900" : "text-gray-400"}>
+                        {selectedHakim.length > 0
+                          ? `${selectedHakim.length} Hakim dipilih`
+                          : '-- Pilih Majelis Hakim --'}
+                      </span>
+                    </div>
+                    {hakimDropdownOpen && (
+                      <div className="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-48 overflow-y-auto">
+                        {hakimOptions.map(hakim => (
+                          <label key={hakim} className="flex items-center gap-2 px-4 py-2 hover:bg-gray-50 cursor-pointer border-b border-gray-50 last:border-0">
+                            <input
+                              type="checkbox"
+                              checked={selectedHakim.includes(hakim)}
+                              onChange={() => toggleHakim(hakim)}
+                              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{hakim}</span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  {selectedHakim.length > 0 && (
+                    <div className="mt-2 text-sm text-gray-600 bg-gray-50 p-2 rounded">
+                      <strong>Terpilih:</strong> {selectedHakim.join(', ')}
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <label className="form-label">Panitera / Panitera Pengganti</label>
+                  <select
+                    {...register('panitera_pengganti')}
+                    className="form-input"
+                  >
+                    {paniteraOptions.map((opt) => (
+                      <option key={opt} value={opt}>
+                        {opt || '-- Pilih Panitera --'}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
             </div>
